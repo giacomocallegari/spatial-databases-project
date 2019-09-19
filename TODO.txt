@@ -1,0 +1,11 @@
+## ALGORITHM ##
+-Create the required data structures from the subdivision
+    -Bounding box
+    -Trapezoidal map
+    -Search structure
+-Query points on the search structure
+-Test the algorithm on a sample subdivision
+
+## DATABASE ##
+-Create a database
+-Test the algorithm on real geographical data
