@@ -5,7 +5,3 @@
     -Search structure
 -Query points on the search structure
 -Test the algorithm on a sample subdivision
-
-## DATABASE ##
--Create a database
--Test the algorithm on real geographical data
