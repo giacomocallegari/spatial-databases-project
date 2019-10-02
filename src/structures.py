@@ -31,6 +31,19 @@ class Trapezoid:
         self.urn = None
         self.lrn = None
 
+    def __str__(self) -> str:
+        """Returns the string representation of a Trapezoid object.
+        """
+
+        res = ""
+        res += "top:\t" + str(self.top) + "\n"
+        res += "bottom:\t" + str(self.bottom) + "\n"
+        res += "leftp = " + str(self.leftp) + "\trightp = " + str(self.rightp) + "\n"
+        res += "uln = " + str(self.uln) + "\turn = " + str(self.urn) + "\n"
+        res += "lln = " + str(self.lln) + "\tlrn = " + str(self.lrn) + "\n"
+
+        return res
+
     def set_neighbors(self, uln: Optional["Trapezoid"], lln: Optional["Trapezoid"],
                       urn: Optional["Trapezoid"], lrn: Optional["Trapezoid"]) -> None:
         self.uln = uln
@@ -52,19 +65,14 @@ class TrapezoidalMap:
         trapezoids (Set[Trapezoids]): The set of trapezoids.
     """
 
-    def __init__(self, R: Rectangle) -> None:
+    def __init__(self, R: Trapezoid) -> None:
         """Initializes TrapezoidalMap.
         """
 
         self.trapezoids = set()
 
         # Add the initial trapezoid, which is the bounding box.
-        ll = Point(R.x1, R.y1)
-        lr = Point(R.x2, R.y1)
-        ul = Point(R.x1, R.y2)
-        ur = Point(R.x2, R.y2)
-        bounding_box = Trapezoid(Segment(ul, ur), Segment(ll, lr), ll, lr)
-        self.add_trapezoid(bounding_box)
+        self.add_trapezoid(R)
 
     def add_trapezoid(self, trapezoid: Trapezoid) -> None:
         """Adds a trapezoid to the trapezoidal map.

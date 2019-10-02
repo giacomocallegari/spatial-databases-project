@@ -145,25 +145,3 @@ class Subdivision:
                 self.min_y = p2.y
             elif p2.y > self.max_y:
                 self.max_y = p2.y
-
-
-class Rectangle:
-    """Class for axis-parallel rectangles.
-
-    A rectangle is defined from its extreme X and Y coordinates.
-
-    Attributes:
-        x1 (float): The leftmost X.
-        x2 (float): The rightmost X.
-        y1 (float): The lower Y.
-        y2 (float): The upper Y.
-    """
-
-    def __init__(self, x1: float, x2: float, y1: float, y2: float) -> None:
-        """Initializes Rectangle with the tuple of vertices.
-        """
-
-        self.x1 = x1
-        self.x2 = x2
-        self.y1 = y1
-        self.y2 = y2

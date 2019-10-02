@@ -1,7 +1,7 @@
 import random
 import networkx as nx
 from typing import List
-from src.geometry import Point, Segment, Subdivision, Rectangle
+from src.geometry import Point, Segment, Subdivision
 from src.structures import Trapezoid, TrapezoidalMap, SearchStructure
 
 
@@ -70,7 +70,7 @@ def query(q: Point, D: SearchStructure):  # TODO
     return face
 
 
-def bounding_box(subdivision: Subdivision) -> Rectangle:
+def bounding_box(subdivision: Subdivision) -> Trapezoid:
     """Creates a bounding box for the subdivision.
 
     The bounding box is a rectangle that contains the whole subdivision, producing a bounded area where a trapezoidal
@@ -82,17 +82,25 @@ def bounding_box(subdivision: Subdivision) -> Rectangle:
         subdivision (Subdivision): The original subdivision.
 
     Returns:
-        Rectangle: The bounding box rectangle.
+        Trapezoid: The bounding box rectangle, a particular case of trapezoid.
     """
 
-    # Get the corners of the rectangle.
-    x1 = subdivision.min_x
-    x2 = subdivision.max_x
-    y1 = subdivision.min_y
-    y2 = subdivision.max_y
+    print("Building the bounding box...")
 
-    # Create and return the rectangle.
-    return Rectangle(x1, x2, y1, y2)
+    # Get the extreme coordinates of the subdivision and add a margin of 1 to each side.
+    x1 = subdivision.min_x - 1
+    x2 = subdivision.max_x + 1
+    y1 = subdivision.min_y - 1
+    y2 = subdivision.max_y + 1
+
+    # Set the corners of the rectangle.
+    ll = Point(x1, y1)
+    lr = Point(x2, y1)
+    ul = Point(x1, y2)
+    ur = Point(x2, y2)
+
+    # Create and return the bounding box.
+    return Trapezoid(Segment(ul, ur), Segment(ll, lr), ll, lr)
 
 
 def follow_segment(T: TrapezoidalMap, D: SearchStructure, s: Segment) -> List[Trapezoid]:  # TODO
@@ -150,7 +158,9 @@ def trapezoidal_map(S: Subdivision) -> (TrapezoidalMap, SearchStructure):  # TOD
 
     # Create the bounding box.
     R = bounding_box(S)
+    print(str(R))
 
+    """
     # Initialize the trapezoidal map and the search structure.
     T = TrapezoidalMap(R)
     D = SearchStructure()
@@ -171,6 +181,7 @@ def trapezoidal_map(S: Subdivision) -> (TrapezoidalMap, SearchStructure):  # TOD
         D.update(T, segments[i], delta)
 
     return T, D
+    """
 
 
 def main():
@@ -181,7 +192,7 @@ def main():
     """
 
     # Create a sample subdivision.
-    print("Creating a sample subdivision...")
+    print("\n*** SAMPLE SUBDIVISION ***")
     p1 = Point(1, 3)
     q1 = Point(5, 4)
     p2 = Point(3, 2)
@@ -192,13 +203,16 @@ def main():
     print(str(S))
 
     # Build the trapezoidal map and the search structure.
-    # print("Building the required data structures...")
+    print("\n*** DATA STRUCTURES ***")
+    trapezoidal_map(S)
     # T, D = trapezoidal_map(S)
 
+    """
     # Query a sample point.
-    # print("Querying a sample point...")
-    # q = Point(2, 4)
-    # face = query(q, D)
+    print("\n*** SAMPLE QUERY ***")
+    q = Point(2, 4)
+    face = query(q, D)
+    """
 
 
 if __name__ == "__main__":
