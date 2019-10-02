@@ -22,7 +22,9 @@ class Point:
         """Returns the string representation of a Point object.
         """
 
-        return "(" + str(self.x) + ", " + str(self.y) + ")"
+        res = "(" + str(self.x) + ", " + str(self.y) + ")"
+
+        return res
 
     def lies_right(self, p: "Point") -> bool:
         """Checks if the current point lies to the right of the given point.
@@ -82,7 +84,10 @@ class Segment:
         """Returns the string representation of a Segment object.
         """
 
-        return "p1 = " + str(self.p1) + "\t\tp2 = " + str(self.p2)
+        # res = "p1 = " + str(self.p1) + "\t\tp2 = " + str(self.p2)
+        res = str(self.p1) + "--------" + str(self.p2)
+
+        return res
 
 
 class Subdivision:

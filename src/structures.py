@@ -69,10 +69,23 @@ class TrapezoidalMap:
         """Initializes TrapezoidalMap.
         """
 
+        print("Initializing the trapezoidal map...")
+
         self.trapezoids = set()
 
         # Add the initial trapezoid, which is the bounding box.
         self.add_trapezoid(R)
+
+    def __str__(self) -> str:
+        """Returns the string representation of a TrapezoidalMap object.
+        """
+
+        res = ""
+
+        for trapezoid in self.trapezoids:
+            res += str(trapezoid)
+
+        return res
 
     def add_trapezoid(self, trapezoid: Trapezoid) -> None:
         """Adds a trapezoid to the trapezoidal map.
@@ -141,8 +154,18 @@ class SearchStructure:
         """Initializes SearchStructure.
         """
 
+        print("Initializing the search structure...")
+
         self.dag = nx.DiGraph()
         self.dag.add_node("R", type="leaf")
+
+    def __str__(self) -> str:
+        """Returns the string representation of a SearchStructure object.
+        """
+
+        res = str(nx.to_pandas_adjacency(self.dag, dtype=int))
+
+        return res
 
     def update(self, T: TrapezoidalMap, s: Segment, delta: List[Trapezoid]) -> None:  # TODO
         """Updates the search structure after some trapezoids have been intersected by the segment.

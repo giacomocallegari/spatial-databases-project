@@ -160,11 +160,13 @@ def trapezoidal_map(S: Subdivision) -> (TrapezoidalMap, SearchStructure):  # TOD
     R = bounding_box(S)
     print(str(R))
 
-    """
     # Initialize the trapezoidal map and the search structure.
     T = TrapezoidalMap(R)
+    print(str(T))
     D = SearchStructure()
+    print(str(D))
 
+    """
     # Shuffle the segments of the subdivision.
     segments = S.segments
     random.shuffle(segments)
@@ -179,9 +181,9 @@ def trapezoidal_map(S: Subdivision) -> (TrapezoidalMap, SearchStructure):  # TOD
 
         # Update the search structure.
         D.update(T, segments[i], delta)
+    """
 
     return T, D
-    """
 
 
 def main():
@@ -204,8 +206,7 @@ def main():
 
     # Build the trapezoidal map and the search structure.
     print("\n*** DATA STRUCTURES ***")
-    trapezoidal_map(S)
-    # T, D = trapezoidal_map(S)
+    T, D = trapezoidal_map(S)
 
     """
     # Query a sample point.

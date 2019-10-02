@@ -1,4 +1,3 @@
-from src.main import traverse
 import networkx as nx
 
 dag = nx.DiGraph()
@@ -33,7 +32,7 @@ dag.add_edge("10", "13")
 dag.add_edge("11", "12")
 dag.add_edge("11", "9")
 
-traverse()
+print(nx.to_pandas_adjacency(dag, dtype=int))
 
 # nx.draw_networkx(dag)
 # plt.show()
