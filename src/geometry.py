@@ -1,4 +1,4 @@
-from typing import List
+from typing import *
 
 
 class Point:
@@ -12,7 +12,11 @@ class Point:
     """
 
     def __init__(self, x: float, y: float) -> None:
-        """Initializes Point with the coordinates.
+        """Initializes a Point object.
+
+        Args:
+            x (float): The X coordinate.
+            y (float): The Y coordinate.
         """
 
         self.x = x
@@ -74,7 +78,11 @@ class Segment:
     """
 
     def __init__(self, p1: Point, p2: Point) -> None:
-        """Initializes Segment with the list of endpoints.
+        """Initializes a Segment object.
+
+        Args:
+            p1 (Point): The leftmost endpoint.
+            p2 (Point): The rightmost endpoint.
         """
 
         self.p1 = p1
@@ -100,7 +108,10 @@ class Subdivision:
     """
 
     def __init__(self, segments: List[Segment]) -> None:
-        """Initializes Subdivision with the list of segments.
+        """Initializes a Segment object.
+
+        Args:
+            segments (List[Segment]): The list of segments.
         """
 
         self.segments = segments

@@ -1,7 +1,8 @@
 import networkx as nx
 
 from src.geometry import *
-from typing import Optional
+from enum import Enum
+from typing import *
 
 
 class Trapezoid:
@@ -19,7 +20,13 @@ class Trapezoid:
     """
 
     def __init__(self, top: Segment, bottom: Segment, leftp: Point, rightp: Point) -> None:
-        """Initializes Trapezoid.
+        """Initializes a Trapezoid object.
+
+        Args:
+            top (Segment): The top non-vertical side.
+            bottom (Segment): The bottom non-vertical side.
+            leftp (Point): The left generator endpoint.
+            rightp (Point): The right generator endpoint.
         """
 
         self.top = top
@@ -66,7 +73,10 @@ class TrapezoidalMap:
     """
 
     def __init__(self, R: Trapezoid) -> None:
-        """Initializes TrapezoidalMap.
+        """Initializes a TrapezoidalMap object.
+
+        Args:
+            R (Trapezoid): The bounding box rectangle.
         """
 
         print("Initializing the trapezoidal map...")
@@ -140,7 +150,104 @@ class TrapezoidalMap:
             print("Multiple trapezoids")
 
 
+class NodeType(Enum):
+    """Enumeration for the types of node.
+    """
+
+    LEAF = 0
+    X_NODE = 1
+    Y_NODE = 2
+
+
+class Node:
+    """Class for the nodes of the search structure.
+
+    Attributes:
+        ntype (NodeType): The type of the node.
+        item (Union[Point, Segment, Trapezoid]): The referenced item.
+        left (Node): The left child.
+        right (Node): The right child.
+    """
+
+    def __init__(self, ntype: NodeType, item: Union[Point, Segment, Trapezoid]) -> None:
+        """Initializes Node with the type and the referenced item.
+
+        Args:
+            ntype (str): The type of the node.
+            item (Union[Point, Segment, Trapezoid]): The referenced item.
+        """
+
+        self.ntype = ntype
+        self.item = item
+        self.left = None
+        self.right = None
+
+    def __str__(self) -> str:
+        """Returns the string representation of a Node object.
+        """
+
+        res = "\n\n"
+
+        res += "ntype = " + str(self.ntype) + "\n"
+        res += "item = " + str(self.item) + "\n"
+        # res += "left = " + self.left.item
+        # res += "right = " + self.right.item
+
+        return res
+
+    def set_left_child(self, child: "Node") -> None:
+        """Sets the left child of the current node.
+
+        Args:
+            child (Node): The left child.
+        """
+
+        self.left = child
+
+    def set_right_child(self, child: "Node") -> None:
+        """Sets the right child of the current node.
+
+        Args:
+            child (Node): The right child.
+        """
+
+        self.right = child
+
+
 class SearchStructure:
+    """Class for the search structure.
+
+    The search structure is a directed acyclic graph (DAG) used to query the location of points in trapezoids.
+    All inner nodes have an out-degree of exactly 2 and can be X-nodes (endpoints) or Y-nodes (segments). Each leaf of
+    the DAG represents a trapezoid.
+
+    Attributes:
+        root (dict): The root of the directed acyclic graph.
+    """
+
+    def __init__(self, R: Trapezoid) -> None:
+        """Initializes a SearchStructure object.
+
+        Args:
+            R (Trapezoid): The bounding box rectangle.
+        """
+
+        print("Initializing the search structure...")
+
+        self.root = Node(NodeType.LEAF, R)
+
+    def __str__(self) -> str:
+        """Returns the string representation of a SearchStructure object.
+        """
+
+        res = "root:" + str(self.root)
+
+        return res
+
+
+
+
+class SearchStructureOld:
     """Class for the search structure.
 
     The search structure is a directed acyclic graph (DAG) used to query the location of points in trapezoids.
@@ -150,14 +257,14 @@ class SearchStructure:
         dag (nx.DiGraph): The directed acyclic graph of the search structure.
     """
 
-    def __init__(self):
+    def __init__(self, R: Trapezoid) -> None:
         """Initializes SearchStructure.
         """
 
         print("Initializing the search structure...")
 
         self.dag = nx.DiGraph()
-        self.dag.add_node("R", type="leaf")
+        self.dag.add_node("R", type="leaf", item=R)
 
     def __str__(self) -> str:
         """Returns the string representation of a SearchStructure object.

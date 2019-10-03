@@ -2,5 +2,4 @@
 -Create the required data structures from the subdivision
     -Trapezoidal map
     -Search structure
--Query points on the search structure
 -Test the algorithm on a sample subdivision

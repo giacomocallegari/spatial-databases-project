@@ -1,11 +1,11 @@
 import random
 import networkx as nx
-from typing import List
 from src.geometry import Point, Segment, Subdivision
-from src.structures import Trapezoid, TrapezoidalMap, SearchStructure
+from src.structures import *
+from typing import *
 
 
-def traverse(q: Point, node: dict, dag: nx.DiGraph):  # TODO
+def traverse(q: Point, node: Node) -> Optional[Trapezoid]:  # TODO
     """Recursively traverses the search structure until a leaf.
 
     In the search structure, each leaf represents a trapezoid of the refined subdivision. The search starts from the
@@ -16,36 +16,35 @@ def traverse(q: Point, node: dict, dag: nx.DiGraph):  # TODO
 
     Args:
         q (Point): The query point.
-        node (dict): The current node of the DAG.
-        dag (nx.DiGraph): The DAG.
+        node (Node): The current node of the DAG.
     """
 
-    ntype = node["type"]
-    nval = node["value"]
-    desc = nx.algorithms.dag.descendants(dag, node)
+    ntype = node.ntype
+    item = node.item
+    # print(str(node))
 
     # If the node is a leaf, it represents a trapezoid.
-    if ntype == "leaf":
+    if ntype == NodeType.LEAF:
         print("leaf")
-        return node
+        return item
     else:
         # If the node is an X-node, it represents an endpoint.
-        if ntype == "x_node":
+        if ntype == NodeType.X_NODE:
             print("x-node")
-            nnext = desc[0] if q < nval else desc[1]
+            nnext = node.left if not q.lies_right(item) else node.right
         # If the node is a Y-node, it represents as segment.
-        elif ntype == "y_node":
+        elif ntype == NodeType.Y_NODE:
             print("y-node")
-            nnext = desc[0] if q < nval else desc [1]
+            nnext = node.left if not q.lies_above(item) else node.right
         else:
             print("Error: Wrong node type.")
             return
 
         # Recursively traverse the DAG.
-        traverse(q, nnext, dag)
+        return traverse(q, nnext)
 
 
-def query(q: Point, D: SearchStructure):  # TODO
+def query(q: Point, D: SearchStructure) -> Optional[Trapezoid]:  # TODO
     """Queries a point in the search structure.
 
     Querying a point consists in a recursive traversal of the search structure's DAG, from the root to a leaf.
@@ -59,13 +58,12 @@ def query(q: Point, D: SearchStructure):  # TODO
         The trapezoid that contains the query point.
     """
 
-    dag = D.dag
-
     # Start from the root of the search structure.
-    node = nx.topological_sort(dag)[0]
+    node = D.root
 
     # Traverse the search structure until a leaf is reached.
-    face = traverse(q, node, dag)
+    face = traverse(q, node)
+    print(face)
 
     return face
 
@@ -121,13 +119,13 @@ def follow_segment(T: TrapezoidalMap, D: SearchStructure, s: Segment) -> List[Tr
     """
 
     # Initialize the list of trapezoids.
-    delta = List[Trapezoid]
+    delta = list()
 
     # Get the endpoints of the segment.
     p, q = s.p1, s.p2
 
     # Find the first intersected trapezoid.
-    delta[0] = query(p, D)  # TODO
+    delta.append(query(p, D))  # TODO
 
     # Iteratively find the next intersected trapezoids.
     j = 0
@@ -158,15 +156,14 @@ def trapezoidal_map(S: Subdivision) -> (TrapezoidalMap, SearchStructure):  # TOD
 
     # Create the bounding box.
     R = bounding_box(S)
-    print(str(R))
+    # print(str(R))
 
     # Initialize the trapezoidal map and the search structure.
     T = TrapezoidalMap(R)
-    print(str(T))
-    D = SearchStructure()
-    print(str(D))
+    # print(str(T))
+    D = SearchStructure(R)
+    # print(str(D))
 
-    """
     # Shuffle the segments of the subdivision.
     segments = S.segments
     random.shuffle(segments)
@@ -176,12 +173,13 @@ def trapezoidal_map(S: Subdivision) -> (TrapezoidalMap, SearchStructure):  # TOD
         # Find the intersected trapezoids.
         delta = follow_segment(T, D, segments[i])
 
+        """
         # Update the trapezoidal map.
         T.update(segments[i], delta)
 
         # Update the search structure.
         D.update(T, segments[i], delta)
-    """
+        """
 
     return T, D
 
@@ -202,7 +200,7 @@ def main():
     s1 = Segment(p1, q1)
     s2 = Segment(p2, q2)
     S = Subdivision([s1, s2])
-    print(str(S))
+    # print(str(S))
 
     # Build the trapezoidal map and the search structure.
     print("\n*** DATA STRUCTURES ***")
