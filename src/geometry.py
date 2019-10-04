@@ -97,6 +97,29 @@ class Segment:
 
         return res
 
+    def lies_above(self, s: "Segment") -> bool:
+        """Checks if the current segment lies above the given segment.
+
+        Args:
+            s (Segment): The other segment.
+
+        Returns:
+            bool: True if the point lies above, False otherwise.
+        """
+
+        return self.p1.lies_above(s) and self.p2.lies_above(s)
+
+    def lies_below(self, s: "Segment") -> bool:
+        """Checks if the current segment lies below the given segment.
+
+        Args:
+            s (Segment): The other segment.
+
+        Returns:
+            bool: True if the point lies above, False otherwise.
+        """
+        return not (self.p1.lies_above(s) or self.p2.lies_above(s))
+
 
 class Subdivision:
     """Class for subdivisions.
