@@ -1,5 +1,3 @@
-import networkx as nx
-
 from src.geometry import *
 from enum import Enum
 from typing import *
@@ -103,6 +101,7 @@ class TrapezoidalMap:
         Args:
             trapezoid (Trapezoid): The trapezoid to add.
         """
+
         self.trapezoids.add(trapezoid)
 
     def remove_trapezoid(self, trapezoid: Trapezoid) -> None:
@@ -111,7 +110,33 @@ class TrapezoidalMap:
         Args:
             trapezoid (Trapezoid): The trapezoid to remove.
         """
+
         self.trapezoids.remove(trapezoid)
+
+    def merge(self, parts: List[Trapezoid]) -> List[Trapezoid]:
+        """Merges the adjacent trapezoids that share the same non-vertical sides.
+
+        Args:
+            parts (List[Trapezoid]): The list of parts of trapezoids.
+
+        Returns:
+            List[Trapezoid]: The list of merged trapezoids.
+        """
+
+        res = []
+
+        # Merge the parts.
+        for i in range(1, len(parts)):
+            pred = parts[i - 1]
+            curr = parts[i]
+
+            # Check if adjacent parts share the same non-vertical sides.
+            if curr.top == pred.top and curr.bottom == pred.bottom:
+                parts[i] = Trapezoid(pred.top, pred.bottom, pred.leftp, curr.rightp)
+            else:
+                res.append(pred)
+
+        return res
 
     def update(self, s: Segment, delta: List[Trapezoid]) -> None:  # TODO
         """Updates the trapezoidal map after some trapezoids have been intersected by the segment.
@@ -124,8 +149,8 @@ class TrapezoidalMap:
         """
 
         # Remove the intersected trapezoids.
-        for trapezoid in delta:
-            self.remove_trapezoid(trapezoid)
+        # for trapezoid in delta:
+        #     self.remove_trapezoid(trapezoid)
 
         # Check whether one or more trapezoids have been intersected.
         if len(delta) == 1:
@@ -144,10 +169,58 @@ class TrapezoidalMap:
             C.set_neighbors(A, None, B, None)
             D.set_neighbors(None, old.lln, None, old.lrn)
 
-            # Add the new trapezoids.
-            self.trapezoids.union({A, B, C, D})
-        else:  # TODO
-            print("Multiple trapezoids")
+            # Add the new trapezoids and remove the old one.
+            self.remove_trapezoid(old)
+            self.trapezoids = self.trapezoids.union({A, B, C, D})
+        else:
+            # TODO: Degenerate case
+            # Create the leftmost and rightmost new trapezoids.
+            first = Trapezoid(delta[0].top, delta[0].bottom, delta[0].leftp, s.p1)
+            last = Trapezoid(delta[-1].top, delta[-1].bottom, s.p2, delta[-1].rightp)
+
+            # Create the lists for the upper and the lower parts of the intersected trapezoids.
+            upper = []
+            lower = []
+
+            # Split each intersected trapezoid into its upper and lower parts.
+            upper.append(Trapezoid(first.top, s, s.p1, first.rightp))
+            lower.append(Trapezoid(s, first.bottom, s.p1, first.rightp))
+            for i in range(1, len(delta) - 1):
+                curr = delta[i]
+                upper.append(Trapezoid(curr.top, s, curr.leftp, curr.rightp))
+                lower.append(Trapezoid(s, curr.bottom, curr.leftp, curr.rightp))
+            upper.append(Trapezoid(last.top, s, last.leftp, s.p2))
+            lower.append(Trapezoid(s, last.bottom, last.leftp, s.p2))
+
+            # Merge the upper and the lower parts where possible.
+            upper = self.merge(upper)
+            lower = self.merge(lower)
+
+            # Set the neighbors of each trapezoid.
+            first.set_neighbors(delta[0].uln, delta[0].lln, upper[0], lower[0])
+            upper[0].set_neighbors(None, None, None, upper[1])
+            for i in range(1, len(upper) - 1):
+                pred = upper[i - 1]
+                curr = upper[i]
+                succ = upper[i + 1]
+                curr.set_neighbors(None, pred, None, succ)
+            upper[-1].set_neighbors(None, upper[-2], None, None)
+            lower[0].set_neighbors(None, None, lower[1], None)
+            for i in range(1, len(lower) - 1):
+                pred = lower[i - 1]
+                curr = lower[i]
+                succ = lower[i + 1]
+                curr.set_neighbors(pred, None, succ, None)
+            lower[-1].set_neighbors(lower[-2], None, None, None)
+            last.set_neighbors(upper[-1], lower[-1], delta[-1].urn, delta[-1].lrn)
+
+            # Add the new trapezoids to the map.
+            self.add_trapezoid(first)
+            for trapezoid in upper:
+                self.add_trapezoid(trapezoid)
+            for trapezoid in lower:
+                self.add_trapezoid(trapezoid)
+            self.add_trapezoid(last)
 
 
 class NodeType(Enum):
@@ -195,20 +268,20 @@ class Node:
 
         return res
 
-    def set_left_child(self, child: "Node") -> None:
+    def set_left_child(self, child: Optional["Node"]) -> None:
         """Sets the left child of the current node.
 
         Args:
-            child (Node): The left child.
+            child (Optional[Node]): The left child.
         """
 
         self.left = child
 
-    def set_right_child(self, child: "Node") -> None:
+    def set_right_child(self, child: Optional["Node"]) -> None:
         """Sets the right child of the current node.
 
         Args:
-            child (Node): The right child.
+            child (Optional[Node]): The right child.
         """
 
         self.right = child
@@ -222,7 +295,8 @@ class SearchStructure:
     the DAG represents a trapezoid.
 
     Attributes:
-        root (dict): The root of the directed acyclic graph.
+        nodes (Set[Node]): The set of nodes.
+        root (Node): The root of the directed acyclic graph.
     """
 
     def __init__(self, R: Trapezoid) -> None:
@@ -234,7 +308,11 @@ class SearchStructure:
 
         print("Initializing the search structure...")
 
+        self.nodes = set()
+
+        # Create the root and add it to the set of nodes.
         self.root = Node(NodeType.LEAF, R)
+        self.add_node(self.root)
 
     def __str__(self) -> str:
         """Returns the string representation of a SearchStructure object.
@@ -244,35 +322,29 @@ class SearchStructure:
 
         return res
 
+    def add_node(self, node: Node) -> None:
+        """Adds a node to the set of the search structure.
 
-
-
-class SearchStructureOld:
-    """Class for the search structure.
-
-    The search structure is a directed acyclic graph (DAG) used to query the location of points in trapezoids.
-    Each leaf of the DAG represents a trapezoid, while inner nodes can be X-nodes (endpoints) or Y-nodes (segments).
-
-    Attributes:
-        dag (nx.DiGraph): The directed acyclic graph of the search structure.
-    """
-
-    def __init__(self, R: Trapezoid) -> None:
-        """Initializes SearchStructure.
+        Args:
+            node: The node to add.
         """
 
-        print("Initializing the search structure...")
+        self.nodes.add(node)
 
-        self.dag = nx.DiGraph()
-        self.dag.add_node("R", type="leaf", item=R)
+    def remove_node(self, node: Node) -> None:
+        """Removes a node from the set of the search structure.
 
-    def __str__(self) -> str:
-        """Returns the string representation of a SearchStructure object.
+        Args:
+            node: The node to remove.
         """
 
-        res = str(nx.to_pandas_adjacency(self.dag, dtype=int))
+        for member in self.nodes:
+            if node == member.left:
+                member.set_left_child(None)
+            elif node == member.right:
+                member.set_right_child(None)
 
-        return res
+        self.nodes.remove(node)
 
     def update(self, T: TrapezoidalMap, s: Segment, delta: List[Trapezoid]) -> None:  # TODO
         """Updates the search structure after some trapezoids have been intersected by the segment.
@@ -288,39 +360,45 @@ class SearchStructureOld:
 
         # Remove the leaves of the intersected trapezoids.
         for trapezoid in delta:
-            leaf = self.dag.nodes.get(id(trapezoid))
-            self.dag.remove_node(leaf)
+            leaf = self.nodes.get(id(trapezoid))
+            self.remove_node(leaf)
 
         # Check whether one or more trapezoids have been intersected.
         if len(delta) == 1:
             print("Single trapezoid")
 
-            parent = self.dag.nodes.get(id(delta[0]))
+            parent = self.nodes.get(id(delta[0]))  # TODO
 
             # Get the new trapezoids.
             A, B, C, D = T.trapezoids  # TODO
 
             # Add the leaves of the new trapezoids.
-            self.dag.add_node(A, type="leaf")
-            self.dag.add_node(B, type="leaf")
-            self.dag.add_node(C, type="leaf")
-            self.dag.add_node(D, type="leaf")
+            nA = Node(NodeType.LEAF, A)
+            nB = Node(NodeType.LEAF, B)
+            nC = Node(NodeType.LEAF, C)
+            nD = Node(NodeType.LEAF, D)
+            self.add_node(nA)
+            self.add_node(nB)
+            self.add_node(nC)
+            self.add_node(nD)
 
             # Add the inner nodes.
-            self.dag.add_node(id(s.p1), type="x_node")
-            self.dag.add_node(id(s.p2), type="x_node")
-            self.dag.add_node(id(s), type="y_node")
+            np1 = Node(NodeType.X_NODE, s.p1)
+            np2 = Node(NodeType.X_NODE, s.p2)
+            ns = Node(NodeType.Y_NODE, s)
+            self.add_node(np1)
+            self.add_node(np2)
+            self.add_node(ns)
 
             # Add the edges.
-            self.dag.add_edge(parent, id(s.p1))
-            self.dag.add_edge(id(s.p1), id(A))
-            self.dag.add_edge(id(s.p1), id(s.p2))
-            self.dag.add_edge(id(s.p2), id(s))
-            self.dag.add_edge(id(s.p2), id(B))
-            self.dag.add_edge(id(s), id(C))
-            self.dag.add_edge(id(s), id(D))
+            parent.set_left_child()
+            parent.set_right_child()
+            np1.set_left_child(nA)
+            np1.set_right_child(np2)
+            np2.set_left_child(ns)
+            np2.set_right_child(nB)
+            ns.set_left_child(nC)
+            ns.set_right_child(nD)
 
         else:  # TODO
             print("Multiple trapezoids")
-
-
