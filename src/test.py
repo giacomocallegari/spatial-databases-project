@@ -1,6 +1,5 @@
-from src.main import traverse
-from src.geometry import Point, Segment
-from src.structures import Trapezoid, NodeType, Node
+from src.geometry import Point, Segment, Trapezoid
+from src.nodes import XNode, YNode, LeafNode
 
 
 # ---GEOMETRY----
@@ -34,20 +33,20 @@ G = Trapezoid(us, ls, q2, lr)
 # ----GRAPH----
 
 # Nodes
-n0 = Node(NodeType.X_NODE, p1)
-n1 = Node(NodeType.LEAF, A)
-n2 = Node(NodeType.X_NODE, q1)
-n3 = Node(NodeType.Y_NODE, s1)
-n4 = Node(NodeType.LEAF, B)
-n5 = Node(NodeType.X_NODE, p2)
-n6 = Node(NodeType.LEAF, C)
-n7 = Node(NodeType.Y_NODE, s2)
-n8 = Node(NodeType.LEAF, D)
-n9 = Node(NodeType.LEAF, F)
-n10 = Node(NodeType.X_NODE, q2)
-n11 = Node(NodeType.Y_NODE, s2)
-n12 = Node(NodeType.LEAF, E)
-n13 = Node(NodeType.LEAF, G)
+n0 = XNode(p1)
+n1 = LeafNode(A)
+n2 = XNode(q1)
+n3 = YNode(s1)
+n4 = LeafNode(B)
+n5 = XNode(p2)
+n6 = LeafNode(C)
+n7 = YNode(s2)
+n8 = LeafNode(D)
+n9 = LeafNode(F)
+n10 = XNode(q2)
+n11 = YNode(s2)
+n12 = LeafNode(E)
+n13 = LeafNode(G)
 
 # Children
 n0.set_left_child(n1)
@@ -69,49 +68,7 @@ n11.set_right_child(n9)
 # ----QUERY----
 
 # Query a point on the DAG.
-q = Point(4, 3)
-face = traverse(q, n0)
+query_point = Point(4, 3)
+face = n0.traverse(query_point)
 
 print(face)
-
-
-"""
-# DAG
-dag = nx.DiGraph()
-
-# Nodes
-dag.add_node("0", label="p1", type="x_node", item=p1)
-dag.add_node("1", label="A", type="leaf", item=A)
-dag.add_node("2", label="q1", type="x_node", item=q1)
-dag.add_node("3", label="s1", type="y_node", item=s1)
-dag.add_node("4", label="B", type="leaf", item=B)
-dag.add_node("5", label="p2", type="x_node", item=p2)
-dag.add_node("6", label="C", type="leaf", item=C)
-dag.add_node("7", label="s2", type="y_node", item=s2)
-dag.add_node("8", label="D", type="leaf", item=D)
-dag.add_node("9", label="F", type="leaf", item=F)
-dag.add_node("10", label="q2", type="x_node", item=q2)
-dag.add_node("11", label="s2", type="y_node", item=s2)
-dag.add_node("12", label="E", type="leaf", item=E)
-dag.add_node("13", label="G", type="leaf", item=G)
-
-# Edges
-dag.add_edge("0", "1", child="left")
-dag.add_edge("0", "2", child="right")
-dag.add_edge("2", "3", child="left")
-dag.add_edge("2", "10", child="right")
-dag.add_edge("3", "4", child="left")
-dag.add_edge("3", "5", child="right")
-dag.add_edge("5", "6", child="left")
-dag.add_edge("5", "7", child="right")
-dag.add_edge("7", "8", child="left")
-dag.add_edge("7", "9", child="right")
-dag.add_edge("10", "11", child="left")
-dag.add_edge("10", "13", child="right")
-dag.add_edge("11", "12", child="left")
-dag.add_edge("11", "9", child="right")
-
-# print(nx.to_pandas_adjacency(dag, dtype=int))
-# nx.draw_networkx(dag)
-# plt.show()
-"""
