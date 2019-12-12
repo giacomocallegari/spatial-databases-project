@@ -68,7 +68,7 @@ class TrapezoidalMap:
         """Finds the trapezoids that are intersected by a segment.
 
         The search starts from the leftmost intersected trapezoid, obtained by querying the left endpoint of the segment
-        on the current trapezoidal map. Then, iteratively, the right neighbor of each intersected trapezoid is found
+        on the current search structure. Then, iteratively, the right neighbor of each intersected trapezoid is found
         until the right endpoint is reached.
         The result is the list of intersected trapezoids, ordered from left to right.
 
@@ -90,7 +90,7 @@ class TrapezoidalMap:
 
         # Iteratively find the next intersected trapezoids.
         j = 0
-        while q.lies_right(deltas[j].rightp):
+        while deltas[j].rightp.lies_left(q):
             if deltas[j].rightp.lies_above(s):
                 # Select the lower right neighbor.
                 deltas[j + 1] = deltas[j].lrn
@@ -168,13 +168,13 @@ class TrapezoidalMap:
             A = Trapezoid(old.top, old.bottom, old.leftp, s.p)
             B = Trapezoid(old.top, old.bottom, s.q, old.rightp)
             C = Trapezoid(old.top, s, s.p, s.q)
-            D = Trapezoid(s, old.top, s.p, s.q)
+            D = Trapezoid(s, old.bottom, s.p, s.q)
 
             # Set the neighbors of the new trapezoids.
             A.set_neighbors(old.uln, old.lln, C, D)
             B.set_neighbors(C, D, old.urn, old.lrn)
             C.set_neighbors(A, None, B, None)
-            D.set_neighbors(None, old.lln, None, old.lrn)
+            D.set_neighbors(None, A, None, B)
 
             # Add the new trapezoids and remove the old one.
             self.remove_trapezoid(old)
@@ -228,6 +228,8 @@ class TrapezoidalMap:
             for trapezoid in lower:
                 self.add_trapezoid(trapezoid)
             self.add_trapezoid(last)
+
+        self.D.update(self, s, deltas)
 
 
 class SearchStructure:
