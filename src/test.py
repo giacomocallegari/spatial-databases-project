@@ -28,6 +28,13 @@ D = Trapezoid(s1, s2, p2, q1)
 E = Trapezoid(us, s2, q1, q2)
 F = Trapezoid(s2, ls, p2, q2)
 G = Trapezoid(us, ls, q2, lr)
+A.set_neighbors(None, None, B, C)
+B.set_neighbors(A, None, E, None)
+C.set_neighbors(None, A, D, F)
+D.set_neighbors(C, None, None, E)
+E.set_neighbors(B, D, G, None)
+F.set_neighbors(None, C, None, G)
+G.set_neighbors(E, F, None, None)
 
 
 # ----GRAPH----
@@ -68,7 +75,8 @@ n11.set_right_child(n9)
 # ----QUERY----
 
 # Query a point on the DAG.
-query_point = Point(4, 3)
+query_point = Point(2, 2)
+print("Querying point " + str(query_point) + "\n")
 face = n0.traverse(query_point)
 
 print(face)

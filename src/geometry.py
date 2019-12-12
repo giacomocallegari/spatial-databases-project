@@ -168,8 +168,8 @@ class Trapezoid:
         res += "top:\t" + str(self.top) + "\n"
         res += "bottom:\t" + str(self.bottom) + "\n"
         res += "leftp = " + str(self.leftp) + "\trightp = " + str(self.rightp) + "\n"
-        res += "uln = " + str(self.uln) + "\turn = " + str(self.urn) + "\n"
-        res += "lln = " + str(self.lln) + "\tlrn = " + str(self.lrn) + "\n"
+        res += "uln = " + str(id(self.uln)) + "\turn = " + str(id(self.urn)) + "\n"
+        res += "lln = " + str(id(self.lln)) + "\tlrn = " + str(id(self.lrn)) + "\n"
 
         return res
 

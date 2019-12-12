@@ -79,8 +79,6 @@ class TrapezoidalMap:
             List[Trapezoid]: The list of intersected trapezoids.
         """
 
-        D = self.D
-
         # Initialize the list of trapezoids.
         deltas = list()
 
@@ -88,7 +86,7 @@ class TrapezoidalMap:
         p, q = s.p, s.q
 
         # Find the first intersected trapezoid.
-        deltas.append(D.query(p))
+        deltas.append(self.D.query(p))
 
         # Iteratively find the next intersected trapezoids.
         j = 0
@@ -358,7 +356,7 @@ class SearchStructure:
             q (Point): The query point.
 
         Returns:
-            The trapezoid that contains the query point.
+            Optional[Trapezoid]: The trapezoid that contains the query point.
         """
 
         # Start from the root of the search structure.

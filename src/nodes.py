@@ -22,9 +22,10 @@ class Node:
         """Returns the string representation of a Node object.
         """
 
-        res = "\n\n"
-        res += "left_child = " + self.left_child
-        res += "right_child = " + self.right_child
+        res = ""
+        res += "ID = " + str(id(self)) + "\n"
+        # res += "left_child = " + str(self.left_child) + "\n"
+        # res += "right_child = " + str(self.right_child) + "\n"
 
         return res
 
@@ -57,20 +58,36 @@ class Node:
 
         Args:
             q (Point): The query point.
-        """
 
-        # print(str(node))
+        Returns:
+            Optional[Trapezoid]: The resulting trapezoid.
+        """
 
         # If the node is a leaf, it represents a trapezoid.
         if isinstance(self, LeafNode):
+            print("leaf\n\n")
             return self.trapezoid
         else:
+            nnext = None
+
             # If the node is an X-node, it represents an endpoint.
             if isinstance(self, XNode):
-                nnext = self.left_child if not q.lies_right(self.point) else self.right_child
+                if not q.lies_right(self.point):
+                    print("To the left of\t" + str(self.point))
+                    nnext = self.left_child
+                else:
+                    print("To the right of\t" + str(self.point))
+                    nnext = self.right_child
+
             # If the node is a Y-node, it represents as segment.
             elif isinstance(self, YNode):
-                nnext = self.left_child if not q.lies_above(self.segment) else self.right_child
+                if q.lies_above(self.segment):
+                    print("Above\t" + str(self.segment))
+                    nnext = self.left_child
+                else:
+                    print("Below\t" + str(self.segment))
+                    nnext = self.right_child
+
             else:
                 print("Error: Wrong node type.")
                 return
