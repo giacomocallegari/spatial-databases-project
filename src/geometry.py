@@ -30,17 +30,17 @@ class Point:
 
         return res
 
-    def lies_right(self, p: "Point") -> bool:
-        """Checks if the current point lies to the right of the given point.
+    def lies_left(self, p: "Point") -> bool:
+        """Checks if the current point lies to the left of the given point.
 
         Args:
             p (Point): The other point.
 
         Returns:
-            bool: True if the current point lies to the right, False otherwise.
+            bool: True if the current point lies to the left, False otherwise.
         """
 
-        return self.x > p.x
+        return self.x < p.x
 
     def lies_above(self, s: "Segment") -> bool:
         """Checks if the point lies above the given segment.

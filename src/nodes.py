@@ -68,24 +68,22 @@ class Node:
             print("leaf\n\n")
             return self.trapezoid
         else:
-            nnext = None
-
             # If the node is an X-node, it represents an endpoint.
             if isinstance(self, XNode):
-                if not q.lies_right(self.point):
-                    print("To the left of\t" + str(self.point))
+                if q.lies_left(self.point):
+                    print("<-\t" + str(self.point))
                     nnext = self.left_child
                 else:
-                    print("To the right of\t" + str(self.point))
+                    print("->\t" + str(self.point))
                     nnext = self.right_child
 
             # If the node is a Y-node, it represents as segment.
             elif isinstance(self, YNode):
                 if q.lies_above(self.segment):
-                    print("Above\t" + str(self.segment))
+                    print("/\\\t" + str(self.segment))
                     nnext = self.left_child
                 else:
-                    print("Below\t" + str(self.segment))
+                    print("\\/\t" + str(self.segment))
                     nnext = self.right_child
 
             else:
