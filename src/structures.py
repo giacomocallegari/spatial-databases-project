@@ -377,6 +377,7 @@ class Subdivision:
 
     Attributes:
         segments (List[Segment]): The list of segments.
+        T (TrapezoidalMap): The trapezoidal map.
     """
 
     def __init__(self, segments: List[Segment]) -> None:
@@ -387,16 +388,7 @@ class Subdivision:
         """
 
         self.segments = segments
-        self.min_x = float("inf")
-        self.max_x = float("-inf")
-        self.min_y = float("inf")
-        self.max_y = float("-inf")
-
-        # Set the extremes of the subdivision.
-        self.min_max()
-
-        # Create the trapezoidal map.
-        T = None
+        self.T = None
 
     def __str__(self) -> str:
         """Returns the string representation of a Subdivision object.
@@ -409,33 +401,6 @@ class Subdivision:
             res += str(self.segments[i]) + "\n"
 
         return res
-
-    def min_max(self) -> None:
-        """Sets the minimum and maximum X and Y coordinates of the subdivision.
-
-        These coordinates are obtained by checking every segment of the subdivision.
-        """
-
-        # Iterate on every segment of the subdivision.
-        for segment in self.segments:
-            p1 = segment.p
-            p2 = segment.q
-
-            # Set the horizontal extremes. The endpoints of each segment are ordered from left to right.
-            if p1.x < self.min_x:
-                self.min_x = p1.x
-            elif p2.x > self.max_x:
-                self.max_x = p2.x
-
-            # Set the vertical extremes.
-            if p1.y < self.min_y:
-                self.min_y = p1.y
-            elif p1.y > self.max_y:
-                self.min_y = p1.y
-            if p2.y < self.min_y:
-                self.min_y = p2.y
-            elif p2.y > self.max_y:
-                self.max_y = p2.y
 
     def bounding_box(self) -> Trapezoid:
         """Creates a bounding box for the subdivision.
@@ -451,11 +416,37 @@ class Subdivision:
 
         print("Building the bounding box...")
 
+        min_x = float("inf")
+        max_x = float("-inf")
+        min_y = float("inf")
+        max_y = float("-inf")
+
+        # Iterate on every segment of the subdivision.
+        for segment in self.segments:
+            p = segment.p
+            q = segment.q
+
+            # Set the horizontal extremes. The endpoints of each segment are ordered from left to right.
+            if p.x < min_x:
+                min_x = p.x
+            elif q.x > max_x:
+                max_x = q.x
+
+            # Set the vertical extremes.
+            if p.y < min_y:
+                min_y = p.y
+            elif p.y > max_y:
+                min_y = p.y
+            if q.y < min_y:
+                min_y = q.y
+            elif q.y > max_y:
+                max_y = q.y
+
         # Get the extreme coordinates of the subdivision and add a margin of 1 to each side.
-        x1 = self.min_x - 1
-        x2 = self.max_x + 1
-        y1 = self.min_y - 1
-        y2 = self.max_y + 1
+        x1 = min_x - 1
+        x2 = max_x + 1
+        y1 = min_y - 1
+        y2 = max_y + 1
 
         # Set the corners of the rectangle.
         ll = Point(x1, y1)
@@ -483,13 +474,13 @@ class Subdivision:
         # print(str(T))
 
         # Shuffle the segments of the subdivision.
-        segments = self.segments
+        segments = self.segments.copy()
         random.shuffle(segments)  # TODO: support customizable seed
 
         # Iteratively build the trapezoidal map.
         for i in range(len(segments)):
             # Find the intersected trapezoids.
-            delta = T.follow_segment(segments[i])
+            delta = self.T.follow_segment(segments[i])
 
             # Update the trapezoidal map.
-            T.update(segments[i], delta)
+            self.T.update(segments[i], delta)
