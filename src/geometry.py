@@ -1,5 +1,7 @@
 from typing import *
 
+from src.nodes import LeafNode
+
 
 class Point:
     """Class for points.
@@ -115,6 +117,7 @@ class Trapezoid:
         lln (Optional[Trapezoid]): The lower left neighbor.
         urn (Optional[Trapezoid]): The upper right neighbor.
         lrn (Optional[Trapezoid]): The lower right neighbor.
+        leaf (LeafNode): The corresponding leaf.
     """
 
     def __init__(self, top: Segment, bottom: Segment, leftp: Point, rightp: Point) -> None:
@@ -135,6 +138,7 @@ class Trapezoid:
         self.lln = None
         self.urn = None
         self.lrn = None
+        self.leaf = LeafNode(self)
 
     def __str__(self) -> str:
         """Returns the string representation of a Trapezoid object.

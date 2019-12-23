@@ -115,7 +115,7 @@ class TrapezoidalMap:
         i = 1
         res = []
 
-        # Iterate on all original trapezoids.
+        # Iterate through all original trapezoids.
         while i < len(parts):
             pred = parts[i - 1]
             curr = parts[i]
@@ -124,11 +124,11 @@ class TrapezoidalMap:
             top = pred.top
             bottom = pred.bottom
             leftp = pred.leftp
-            rightp = None
+            rightp = pred.rightp
             uln = pred.uln
             lln = pred.lln
-            urn = None
-            lrn = None
+            urn = pred.urn
+            lrn = pred.uln
 
             # Keep merging adjacent trapezoids that share both non-vertical sides.
             while curr.top == pred.top and curr.bottom == pred.bottom and i < len(parts):
@@ -165,10 +165,10 @@ class TrapezoidalMap:
             old = deltas[0]
 
             # Generate the new trapezoids.
-            A = Trapezoid(old.top, old.bottom, old.leftp, s.p)
-            B = Trapezoid(old.top, old.bottom, s.q, old.rightp)
-            C = Trapezoid(old.top, s, s.p, s.q)
-            D = Trapezoid(s, old.bottom, s.p, s.q)
+            A = Trapezoid(old.top, old.bottom, old.leftp, s.p)  # Leftmost trapezoid
+            B = Trapezoid(old.top, old.bottom, s.q, old.rightp)  # Rightmost trapezoid
+            C = Trapezoid(old.top, s, s.p, s.q)  # Upper trapezoid
+            D = Trapezoid(s, old.bottom, s.p, s.q)  # Lower trapezoid
 
             # Set the neighbors of the new trapezoids.
             A.set_neighbors(old.uln, old.lln, C, D)
@@ -315,24 +315,17 @@ class SearchStructure:
             print("Single trapezoid")
 
             # Get the parents of the old trapezoid's node.
-            old = deltas[0]
-            parents = set()
-            for node in self.nodes:
-                if isinstance(node, LeafNode) and node.trapezoid == old:
-                    parents = node.parents
+            old = deltas[0].leaf
+            parents = old.parents
 
             # Get the new trapezoids.
             A, B, C, D = T.trapezoids  # TODO
 
             # Add the leaves of the new trapezoids.
-            nA = LeafNode(A)
-            nB = LeafNode(B)
-            nC = LeafNode(C)
-            nD = LeafNode(D)
-            self.add_node(nA)
-            self.add_node(nB)
-            self.add_node(nC)
-            self.add_node(nD)
+            self.add_node(A.leaf)
+            self.add_node(B.leaf)
+            self.add_node(C.leaf)
+            self.add_node(D.leaf)
 
             # Add the inner nodes.
             np = XNode(s.p)
@@ -348,15 +341,47 @@ class SearchStructure:
                     parent.set_left_child(np)
                 elif parent.right_child == old:
                     parent.set_right_child(np)
-            np.set_left_child(nA)
+            np.set_left_child(A.leaf)
             np.set_right_child(nq)
             nq.set_left_child(ns)
-            nq.set_right_child(nB)
-            ns.set_left_child(nC)
-            ns.set_right_child(nD)
+            nq.set_right_child(B.leaf)
+            ns.set_left_child(C.leaf)
+            ns.set_right_child(D.leaf)
 
         else:  # TODO
             print("Multiple trapezoids")
+
+            # Manage the first intersected trapezoid.
+            np = XNode(s.p)
+            self.add_node(np)  # TODO: check degenerate case
+            old = deltas[0].leaf
+            parents = old.parents
+            n_first = LeafNode()
+
+            # Iterate through the intersected trapezoids.
+            for i in range(1, len(deltas) - 1):
+                # Get the parents of the old trapezoid's node.
+                old = deltas[i].leaf
+                parents = old.parents
+
+                # Add the leaves of the new trapezoids.
+
+                # Add the inner nodes.
+                ns = YNode(s)
+                self.add_node(ns)
+                if i == 0:
+                    np = XNode(s.p)
+                    self.add_node(np)
+                elif i == len(deltas) - 1:
+                    nq = XNode(s.p)
+                    self.add_node(nq)
+
+                # Add the edges.
+                for parent in parents:
+                    if parent.left_child == old:
+                        parent.set_left_child(ns)
+                    elif parent.right_child == old:
+                        parent.set_right_child(ns)
 
     def query(self, q: Point) -> Optional[Trapezoid]:
         """Queries a point in the search structure.
