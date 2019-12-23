@@ -1,5 +1,7 @@
 from typing import *
 
+from src.util import *
+
 
 class Point:
     """Class for points.
@@ -145,12 +147,12 @@ class Trapezoid:
         """
 
         res = ""
-        res += "ID:\t" + str(id(self)) + "\n"
-        res += "top:\t" + str(self.top) + "\n"
-        res += "bottom:\t" + str(self.bottom) + "\n"
-        res += "leftp = " + str(self.leftp) + "\trightp = " + str(self.rightp) + "\n"
-        res += "uln = " + str(id(self.uln)) + "\turn = " + str(id(self.urn)) + "\n"
-        res += "lln = " + str(id(self.lln)) + "\tlrn = " + str(id(self.lrn)) + "\n"
+        res += "\tTrapezoid ID: " + get_id(self) + "\t| Leaf ID: " + get_id(self.leaf) + "\n"
+        res += "\ttop:\t" + str(self.top) + "\n"
+        res += "\tbottom:\t" + str(self.bottom) + "\n"
+        res += "\tleftp = " + str(self.leftp) + "\trightp = " + str(self.rightp) + "\n"
+        res += "\tuln = " + get_id(self.uln) + "\turn = " + get_id(self.urn) + "\n"
+        res += "\tlln = " + get_id(self.lln) + "\tlrn = " + get_id(self.lrn) + "\n"
 
         return res
 

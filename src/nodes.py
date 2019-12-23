@@ -1,6 +1,7 @@
 from typing import *
 
 from src.geometry import Point, Segment, Trapezoid
+from src.util import *
 
 
 class Node:
@@ -25,9 +26,9 @@ class Node:
         """
 
         res = ""
-        res += "ID = " + str(id(self)) + "\n"
-        res += "left_child = " + str(id(self.left_child)) + "\n"
-        res += "right_child = " + str(id(self.right_child)) + "\n"
+        res += "\tNode ID: " + get_id(self) + "\n"
+        res += "\tleft_child:\t" + get_id(self.left_child) + "\n"
+        res += "\tright_child:\t" + get_id(self.right_child) + "\n"
 
         return res
 
@@ -87,29 +88,29 @@ class Node:
 
         # If the node is a leaf, it represents a trapezoid.
         if isinstance(self, LeafNode):
-            print("leaf\n\n")
+            # print("leaf\n\n")
             return self.trapezoid
         else:
             # If the node is an X-node, it represents an endpoint.
             if isinstance(self, XNode):
                 if q.lies_left(self.point):
-                    print("<-\t" + str(self.point))
+                    # print("<-\t" + str(self.point))
                     nnext = self.left_child
                 else:
-                    print("->\t" + str(self.point))
+                    # print("->\t" + str(self.point))
                     nnext = self.right_child
 
             # If the node is a Y-node, it represents as segment.
             elif isinstance(self, YNode):
                 if q.lies_above(self.segment):
-                    print("/\\\t" + str(self.segment))
+                    # print("/\\\t" + str(self.segment))
                     nnext = self.left_child
                 else:
-                    print("\\/\t" + str(self.segment))
+                    # print("\\/\t" + str(self.segment))
                     nnext = self.right_child
 
             else:
-                print("Error: Wrong node type.")
+                # print("Error: Wrong node type.")
                 return
 
             # Recursively traverse the DAG.
