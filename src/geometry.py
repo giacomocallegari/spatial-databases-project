@@ -1,7 +1,5 @@
 from typing import *
 
-from src.nodes import LeafNode
-
 
 class Point:
     """Class for points.
@@ -130,6 +128,8 @@ class Trapezoid:
             rightp (Point): The right generator endpoint.
         """
 
+        from src.nodes import LeafNode
+
         self.top = top
         self.bottom = bottom
         self.leftp = leftp
@@ -145,6 +145,7 @@ class Trapezoid:
         """
 
         res = ""
+        res += "ID:\t" + str(id(self)) + "\n"
         res += "top:\t" + str(self.top) + "\n"
         res += "bottom:\t" + str(self.bottom) + "\n"
         res += "leftp = " + str(self.leftp) + "\trightp = " + str(self.rightp) + "\n"
