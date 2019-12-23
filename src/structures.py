@@ -62,7 +62,7 @@ class TrapezoidalMap:
             trapezoid (Trapezoid): The trapezoid to remove.
         """
 
-        self.trapezoids.remove(trapezoid)
+        self.trapezoids.discard(trapezoid)
 
     def follow_segment(self, s: Segment) -> List[Trapezoid]:  # TODO
         """Finds the trapezoids that are intersected by a segment.
@@ -288,8 +288,10 @@ class SearchStructure:
                 member.set_left_child(None)
             elif node == member.right:
                 member.set_right_child(None)
+            elif node in member.parents:
+                member.remove_parent(node)
 
-        self.nodes.remove(node)
+        self.nodes.discard(node)
 
     def update(self, T: TrapezoidalMap, s: Segment, deltas: List[Trapezoid]) -> None:  # TODO
         """Updates the search structure after some trapezoids have been intersected by the segment.
@@ -304,15 +306,20 @@ class SearchStructure:
         """
 
         # Remove the leaves of the intersected trapezoids.
-        for trapezoid in deltas:
-            leaf = self.nodes.get(id(trapezoid))
-            self.remove_node(leaf)
+        # for trapezoid in deltas:
+        #     leaf = self.nodes.get(id(trapezoid))
+        #     self.remove_node(leaf)
 
         # Check the number of intersected trapezoids.
         if len(deltas) == 1:
             print("Single trapezoid")
 
-            parent = self.nodes.get(id(deltas[0]))  # TODO
+            # Get the parents of the old trapezoid's node.
+            old = deltas[0]
+            parents = set()
+            for node in self.nodes:
+                if isinstance(node, LeafNode) and node.trapezoid == old:
+                    parents = node.parents
 
             # Get the new trapezoids.
             A, B, C, D = T.trapezoids  # TODO
@@ -336,8 +343,11 @@ class SearchStructure:
             self.add_node(ns)
 
             # Add the edges.
-            parent.set_left_child()
-            parent.set_right_child()
+            for parent in parents:
+                if parent.left_child == old:
+                    parent.set_left_child(np)
+                elif parent.right_child == old:
+                    parent.set_right_child(np)
             np.set_left_child(nA)
             np.set_right_child(nq)
             nq.set_left_child(ns)
@@ -471,6 +481,8 @@ class Subdivision:
         These structures can be used together to query which trapezoid contains a given point.
         """
 
+        # TODO: reset existing trapezoidal map?
+
         # Get the list of segments and shuffle it.
         segments = list(self.segments)
         random.shuffle(segments)  # TODO: support customizable seed
@@ -478,7 +490,7 @@ class Subdivision:
         # Iteratively build the trapezoidal map.
         for i in range(len(segments)):
             # Find the intersected trapezoids.
-            delta = self.T.follow_segment(segments[i])
+            deltas = self.T.follow_segment(segments[i])
 
             # Update the trapezoidal map.
-            self.T.update(segments[i], delta)
+            self.T.update(segments[i], deltas)

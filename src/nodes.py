@@ -7,6 +7,7 @@ class Node:
     """Class for the nodes of the search structure.
 
     Attributes:
+        parents (Set[Node]): The parents.
         left_child (Optional[Node]): The left child.
         right_child (Optional[Node]): The right child.
     """
@@ -15,6 +16,7 @@ class Node:
         """Initializes Node.
         """
 
+        self.parents = set()
         self.left_child = None
         self.right_child = None
 
@@ -24,10 +26,28 @@ class Node:
 
         res = ""
         res += "ID = " + str(id(self)) + "\n"
-        # res += "left_child = " + str(self.left_child) + "\n"
-        # res += "right_child = " + str(self.right_child) + "\n"
+        res += "left_child = " + str(id(self.left_child)) + "\n"
+        res += "right_child = " + str(id(self.right_child)) + "\n"
 
         return res
+
+    def add_parent(self, parent: "Node") -> None:
+        """Adds a new parent to the current node.
+
+        Args:
+            parent: The new parent.
+        """
+
+        self.parents.add(parent)
+
+    def remove_parent(self, parent: "Node"):
+        """Removes a parent from the current node.
+
+        Args:
+            parent: The parent to remove.
+        """
+
+        self.parents.discard(parent)
 
     def set_left_child(self, child: Optional["Node"]) -> None:
         """Sets the left child of the current node.
@@ -37,6 +57,7 @@ class Node:
         """
 
         self.left_child = child
+        child.add_parent(self)
 
     def set_right_child(self, child: Optional["Node"]) -> None:
         """Sets the right child of the current node.
@@ -46,6 +67,7 @@ class Node:
         """
 
         self.right_child = child
+        child.add_parent(self)
 
     def traverse(self, q: Point) -> Optional[Trapezoid]:
         """Recursively traverses the search structure until a leaf is reached.
