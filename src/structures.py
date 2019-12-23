@@ -388,7 +388,14 @@ class Subdivision:
         """
 
         self.segments = segments
-        self.T = None
+
+        # Create the bounding box.
+        R = self.bounding_box()
+        # print(str(R))
+
+        # Initialize the trapezoidal map.
+        self.T = TrapezoidalMap(R)
+        # print(str(T))
 
     def __str__(self) -> str:
         """Returns the string representation of a Subdivision object.
@@ -457,20 +464,12 @@ class Subdivision:
         return Trapezoid(Segment(ul, ur), Segment(ll, lr), ll, lr)
 
     def trapezoidal_map(self) -> None:
-        """Creates the trapezoidal map from the subdivision.
+        """Builds the trapezoidal map from the subdivision.
 
         The trapezoidal map is a refinement of the original subdivision. It is completed by a search structure, which is
         a DAG representing the trapezoids as leaves.
         These structures can be used together to query which trapezoid contains a given point.
         """
-
-        # Create the bounding box.
-        R = self.bounding_box()
-        # print(str(R))
-
-        # Initialize the trapezoidal map.
-        self.T = TrapezoidalMap(R)
-        # print(str(T))
 
         # Get the list of segments and shuffle it.
         segments = list(self.segments)
