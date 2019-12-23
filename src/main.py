@@ -17,7 +17,7 @@ def main():
     q2 = Point(6, 1)
     s1 = Segment(p1, q1)
     s2 = Segment(p2, q2)
-    S = Subdivision([s1, s2])
+    S = Subdivision({s1, s2})
     print(str(S))
 
     """

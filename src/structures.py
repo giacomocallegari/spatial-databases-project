@@ -376,15 +376,15 @@ class Subdivision:
     A subdivision is a set of non-crossing segments that divide a plane. These segments can have common endpoints.
 
     Attributes:
-        segments (List[Segment]): The list of segments.
+        segments (Set[Segment]): The list of segments.
         T (TrapezoidalMap): The trapezoidal map.
     """
 
-    def __init__(self, segments: List[Segment]) -> None:
+    def __init__(self, segments: Set[Segment]) -> None:
         """Initializes a Subdivision object.
 
         Args:
-            segments (List[Segment]): The list of segments.
+            segments (Set[Segment]): The list of segments.
         """
 
         self.segments = segments
@@ -396,9 +396,8 @@ class Subdivision:
 
         res = ""
 
-        for i in range(len(self.segments)):
-            res += "Segment " + str(i) + ":\n"
-            res += str(self.segments[i]) + "\n"
+        for segment in self.segments:
+            res += str(segment) + "\n"
 
         return res
 
@@ -470,11 +469,11 @@ class Subdivision:
         # print(str(R))
 
         # Initialize the trapezoidal map.
-        T = TrapezoidalMap(R)
+        self.T = TrapezoidalMap(R)
         # print(str(T))
 
-        # Shuffle the segments of the subdivision.
-        segments = self.segments.copy()
+        # Get the list of segments and shuffle it.
+        segments = list(self.segments)
         random.shuffle(segments)  # TODO: support customizable seed
 
         # Iteratively build the trapezoidal map.

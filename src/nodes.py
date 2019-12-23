@@ -7,8 +7,8 @@ class Node:
     """Class for the nodes of the search structure.
 
     Attributes:
-        left_child (Node): The left child.
-        right_child (Node): The right child.
+        left_child (Optional[Node]): The left child.
+        right_child (Optional[Node]): The right child.
     """
 
     def __init__(self) -> None:
