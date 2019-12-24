@@ -62,37 +62,29 @@ def merge_trapezoids(parts: List[Trapezoid]) -> List[Trapezoid]:
         List[Trapezoid]: The list of merged trapezoids.
     """
 
-    i = 1
     res = []
 
-    # Get the current trapezoid and the predecessor.
-    pred = parts[0]
-    curr = parts[1]
+    i = 0
+    j = 1
+    size = len(parts)
 
-    while i < len(parts):
+    while i < size and j < size:
         # Initialize the properties of a new trapezoid.
-        top = pred.top
-        bottom = pred.bottom
-        leftp = pred.leftp
-        rightp = pred.rightp
+        top = parts[i].top
+        bottom = parts[i].bottom
+        leftp = parts[i].leftp
+        rightp = parts[i].rightp
 
         # Check if the current trapezoid can be merged with the predecessor.
-        while i < len(parts) - 1 and curr.top == pred.top and curr.bottom == pred.bottom:
-            print("\t" + str(i) + " - Keep merging")
-            curr = parts[i]
+        while (i < size and j < size) and (parts[j].top == parts[i].top and parts[j].bottom == parts[i].bottom):
+            rightp = parts[j].rightp
 
-            rightp = curr.rightp
-
-            i += 1
-
-        print("\t" + str(i) + " - Stop merging")
-        pred = parts[i]
+            j += 1
 
         # Add the merged trapezoid to the list.
-        merged = Trapezoid(top, bottom, leftp, rightp)
-        res.append(merged)
+        res.append(Trapezoid(top, bottom, leftp, rightp))
 
-        i += 1
+        i = j
 
     return res
 
