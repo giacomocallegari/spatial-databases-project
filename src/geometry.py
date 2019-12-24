@@ -1,7 +1,5 @@
 from typing import *
 
-from src.util import *
-
 
 class Point:
     """Class for points.
@@ -145,6 +143,8 @@ class Trapezoid:
     def __str__(self) -> str:
         """Returns the string representation of a Trapezoid object.
         """
+
+        from src.util import get_id
 
         res = ""
         res += "\tTrapezoid ID: " + get_id(self) + "\t| Leaf ID: " + get_id(self.leaf) + "\n"
