@@ -41,18 +41,20 @@ class NewTrapezoids:
         res = ""
 
         res += "\tFirst:\n"
-        res += "\t\t" + get_id(self.first) + "\n"
+        res += str(self.first) + "\n"
 
-        res += "\tUpper:\n"
+        res += "\tUpper:\n\t{\n"
         for delta in self.upper:
-            res += "\t\t" + get_id(delta) + "\n"
+            res += str(delta)
+        res += "\t}\n\n"
 
-        res += "\tLower:\n"
+        res += "\tLower:\n\t{\n"
         for delta in self.lower:
-            res += "\t\t" + get_id(delta) + "\n"
+            res += str(delta)
+        res += "\t}\n\n"
 
         res += "\tLast:\n"
-        res += "\t\t" + get_id(self.last) + "\n"
+        res += str(self.last) + "\n"
 
         return res
 
@@ -309,7 +311,7 @@ class SearchStructure:
         """Updates the search structure after some trapezoids have been intersected by the segment.
 
         The leaves of intersected trapezoids are removed and replaced with the ones of the new trapezoids, also adding
-        some inner nodes.
+        some inner nodes and the necessary edges.
 
         Args:
             s (Segment): The segment.
@@ -321,7 +323,7 @@ class SearchStructure:
 
         print("Intersected trapezoids:")
         for delta in old_ts:
-            print(str(delta))
+            print(delta)
 
         print("New trapezoids:")
         print(new_ts)
@@ -364,6 +366,10 @@ class SearchStructure:
             last = new_ts.last
             upper = new_ts.upper
             lower = new_ts.lower
+
+            print("len(old_ts):\t" + str(len(old_ts)))
+            print("len(upper):\t" + str(len(upper)))
+            print("len(lower):\t" + str(len(lower)))
 
             # Create the inner nodes.
             np = XNode(s.p)
@@ -436,7 +442,7 @@ class Subdivision:
 
         # Create the bounding box.
         R = self.bounding_box()
-        # print(R)
+        print(R)
 
         # Initialize the trapezoidal map.
         self.T = TrapezoidalMap(R)
