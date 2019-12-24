@@ -58,7 +58,9 @@ class Node:
         """
 
         self.left_child = child
-        child.add_parent(self)
+
+        if child is not None:
+            child.add_parent(self)
 
     def set_right_child(self, child: Optional["Node"]) -> None:
         """Sets the right child of the current node.
@@ -68,7 +70,9 @@ class Node:
         """
 
         self.right_child = child
-        child.add_parent(self)
+
+        if child is not None:
+            child.add_parent(self)
 
     def traverse(self, q: Point) -> Optional[Trapezoid]:
         """Recursively traverses the search structure until a leaf is reached.
