@@ -154,20 +154,6 @@ class TrapezoidalMap:
             # Get the last element of the list.
             curr = deltas[-1]
 
-        """j = 0
-        while deltas[j].rightp.lies_left(q):
-            print(deltas)
-            print("j: " + str(j))
-
-            if deltas[j].rightp.lies_above(s):
-                # Select the lower right neighbor.
-                deltas[j + 1] = deltas[j].lrn
-            else:
-                # Select the upper right neighbor.
-                deltas[j + 1] = deltas[j].urn
-
-            j += 1"""
-
         return deltas
 
     def update(self, s: Segment, deltas: List[Trapezoid]) -> None:  # TODO
@@ -212,13 +198,13 @@ class TrapezoidalMap:
 
             # Split the intermediate intersected trapezoids into their upper and lower parts.
             print("Splitting the intermediate trapezoids...")
-            upper, lower = split_trapezoids(s, deltas)
+            upper_split, lower_split = split_trapezoids(s, deltas)
 
             # Merge the upper and the lower parts where possible.
             print("Merging the upper parts...")
-            upper = merge_trapezoids(upper)
+            upper = merge_trapezoids(upper_split)
             print("Merging the lower parts...")
-            lower = merge_trapezoids(lower)
+            lower = merge_trapezoids(lower_split)
 
             # Create the leftmost and rightmost new trapezoids.
             first = Trapezoid(deltas[0].top, deltas[0].bottom, deltas[0].leftp, s.p)
@@ -314,7 +300,15 @@ class SearchStructure:
             nq = XNode(s.q)
             ns = YNode(s)
 
-            # Add the edges.
+            # Add the edges to create a subtree.
+            np.set_left_child(A.leaf)
+            np.set_right_child(nq)
+            nq.set_left_child(ns)
+            nq.set_right_child(B.leaf)
+            ns.set_left_child(C.leaf)
+            ns.set_right_child(D.leaf)
+
+            # Replace the old leaf with the new subtree where needed.
             if self.root == old:
                 self.root = np
             else:
@@ -323,12 +317,6 @@ class SearchStructure:
                         parent.set_left_child(np)
                     elif parent.right_child == old:
                         parent.set_right_child(np)
-            np.set_left_child(A.leaf)
-            np.set_right_child(nq)
-            nq.set_left_child(ns)
-            nq.set_right_child(B.leaf)
-            ns.set_left_child(C.leaf)
-            ns.set_right_child(D.leaf)
 
         else:
             # Get the new trapezoids.
