@@ -134,10 +134,12 @@ class Trapezoid:
         self.bottom = bottom
         self.leftp = leftp
         self.rightp = rightp
+
         self.uln = None
         self.lln = None
         self.urn = None
         self.lrn = None
+
         self.leaf = LeafNode(self)
 
     def __str__(self) -> str:

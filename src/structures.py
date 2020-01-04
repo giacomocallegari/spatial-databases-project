@@ -38,18 +38,20 @@ class NewTrapezoids:
         """Returns the string representation of a NewTrapezoids object.
         """
 
+        from itertools import groupby
+
         res = ""
 
         res += "\tFirst:\n"
         res += str(self.first) + "\n"
 
         res += "\tUpper:\n\t{\n"
-        for delta in self.upper:
+        for delta in [x[0] for x in groupby(self.upper)]:
             res += str(delta)
         res += "\t}\n\n"
 
         res += "\tLower:\n\t{\n"
-        for delta in self.lower:
+        for delta in [x[0] for x in groupby(self.lower)]:
             res += str(delta)
         res += "\t}\n\n"
 
@@ -220,9 +222,9 @@ class TrapezoidalMap:
             for delta in deltas:
                 self.remove_trapezoid(delta)
             self.add_trapezoid(first)
-            for delta in upper:
+            for delta in set(upper):
                 self.add_trapezoid(delta)
-            for delta in lower:
+            for delta in set(lower):
                 self.add_trapezoid(delta)
             self.add_trapezoid(last)
 
@@ -325,37 +327,34 @@ class SearchStructure:
             upper = new_ts.upper
             lower = new_ts.lower
 
-            print("len(old_ts):\t" + str(len(old_ts)))
-            print("len(upper):\t" + str(len(upper)))
-            print("len(lower):\t" + str(len(lower)))
-
             # Create the inner nodes.
             np = XNode(s.p)
             nq = XNode(s.q)
             ns_list = []
             for i in range(len(old_ts)):
+                ns = YNode(s)
                 ns_list.append(YNode(s))
 
-            # Add the edges.
+                # Set the children of the Y-node.
+                ns.set_left_child(upper[i].leaf)
+                ns.set_right_child(lower[i].leaf)
+
+            # Replace the leftmost and rightmost leaves with X-nodes.
             np.set_left_child(first.leaf)
             np.set_right_child(ns_list[0])
+            nq.set_left_child(ns_list[-1])
+            nq.set_right_child(last.leaf)
 
-            # TODO: Set correct children for Y-nodes
-            """for old_t in old_ts:
-                old = old_t.leaf
+            # Replace each intermediate leaf with a Y-node.
+            for i in range(len(ns_list)):
+                old = old_ts[i].leaf
+                ns = ns_list[i]
 
                 for parent in old.parents:
                     if parent.left_child == old:
                         parent.set_left_child(ns)
                     elif parent.right_child == old:
                         parent.set_right_child(ns)
-
-            for ns in ns_list:
-                ns.set_left_child(None)
-                ns.set_right_child(None)"""
-
-            nq.set_left_child(ns_list[-1])
-            nq.set_right_child(last.leaf)
 
     def query(self, q: Point) -> Optional[Trapezoid]:
         """Queries a point in the search structure.

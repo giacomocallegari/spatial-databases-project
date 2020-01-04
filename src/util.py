@@ -55,11 +55,14 @@ def split_trapezoids(s: Segment, deltas: List[Trapezoid]) -> (List[Trapezoid], L
 def merge_trapezoids(parts: List[Trapezoid]) -> List[Trapezoid]:
     """Merges the adjacent trapezoids that share both non-vertical sides.
 
+    In the resulting list, the i-th element specifies the destination trapezoid of the i-th part, which means that the
+    list contains duplicates for consecutive merged parts.
+
     Args:
         parts (List[Trapezoid]): The list of parts of trapezoids.
 
     Returns:
-        List[Trapezoid]: The list of merged trapezoids.
+        List[Trapezoid]: The mapping from the original trapezoids to the merged ones.
     """
 
     res = []
@@ -81,23 +84,29 @@ def merge_trapezoids(parts: List[Trapezoid]) -> List[Trapezoid]:
 
             j += 1
 
-        # Add the merged trapezoid to the list.
-        res.append(Trapezoid(top, bottom, leftp, rightp))
+        # Map each original trapezoid to the merged one.
+        merged = Trapezoid(top, bottom, leftp, rightp)
+        for k in range(i, j):
+            res.append(merged)
 
         i = j
 
     return res
 
 
-def update_neighbors(deltas: List[Trapezoid], ln: Trapezoid, rn: Trapezoid, above: bool) -> None:
+def update_neighbors(adj_list: List[Trapezoid], ln: Trapezoid, rn: Trapezoid, above: bool) -> None:
     """Updates the neighbors of a list of trapezoids that share the same non-vertical side.
 
     Args:
-        deltas (List[Trapezoids]): The list of adjacent trapezoids.
+        adj_list (List[Trapezoids]): The mapping from the original trapezoids to the merged ones.
         ln: The left neighbor of the leftmost trapezoid.
         rn: The right neighbor of the rightmost trapezoid.
         above (bool): True if the trapezoids share the bottom side, False if they share the top side.
     """
+
+    # Remove consecutive duplicates from the list of adjacent trapezoids.
+    from itertools import groupby
+    deltas = [x[0] for x in groupby(adj_list)]
 
     if len(deltas) > 1:
         # Set the neighbors of the leftmost trapezoid.
