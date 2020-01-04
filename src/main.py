@@ -18,18 +18,16 @@ def main():
     s1 = Segment(p1, q1)
     s2 = Segment(p2, q2)
     S = Subdivision({s1, s2})
-    # print(str(S))
 
     # Build the trapezoidal map and the search structure.
     print("\n\n*** CONSTRUCTION ***")
     S.trapezoidal_map()
 
-    """
     # Query a sample point.
     print("\n\n*** QUERY ***")
     query_point = Point(2, 4)
-    face = S.D.query(query_point)
-    """
+    face = S.T.D.query(query_point)
+    print("\nPoint " + str(query_point) + " is located here:\n" + str(face))
 
 
 if __name__ == "__main__":

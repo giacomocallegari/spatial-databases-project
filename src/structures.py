@@ -120,7 +120,7 @@ class TrapezoidalMap:
 
         self.trapezoids.discard(trapezoid)
 
-    def follow_segment(self, s: Segment) -> List[Trapezoid]:  # TODO
+    def follow_segment(self, s: Segment) -> List[Trapezoid]:
         """Finds the trapezoids that are intersected by a segment.
 
         The search starts from the leftmost intersected trapezoid, obtained by querying the left endpoint of the segment
@@ -135,8 +135,10 @@ class TrapezoidalMap:
             List[Trapezoid]: The list of intersected trapezoids.
         """
 
+        print("\n>>> Finding the intersected trapezoids...")
+
         # Initialize the list of trapezoids.
-        deltas = list()
+        deltas = []
 
         # Get the endpoints of the segment.
         p, q = s.p, s.q
@@ -158,7 +160,7 @@ class TrapezoidalMap:
 
         return deltas
 
-    def update(self, s: Segment, deltas: List[Trapezoid]) -> None:  # TODO
+    def update(self, s: Segment, deltas: List[Trapezoid]) -> None:
         """Updates the trapezoidal map after some trapezoids have been intersected by the segment.
 
         The intersected trapezoids are removed and replaced with the new ones.
@@ -168,11 +170,10 @@ class TrapezoidalMap:
             deltas (List[Trapezoids]): The list of intersected trapezoids.
         """
 
-        print("\nUpdating the trapezoidal map...", end=" ")
+        print("\n>>> Updating the trapezoidal map...")
 
         # Check whether one or more trapezoids have been intersected.
         if len(deltas) == 1:
-            # TODO: Merge with general case?
             print("Single trapezoid detected.")
 
             # Get the single intersected trapezoid.
@@ -230,6 +231,13 @@ class TrapezoidalMap:
 
             new_ts = NewTrapezoids(first, last, upper, lower)
 
+        print("\nIntersected trapezoids:")
+        for delta in deltas:
+            print(get_id(delta))
+
+        print("\nNew trapezoids:")
+        print(new_ts)
+
         # Update the search structure.
         self.D.update(s, deltas, new_ts)
 
@@ -277,14 +285,7 @@ class SearchStructure:
             new_ts (NewTrapezoids): The container for new trapezoids.
         """
 
-        print("\nUpdating the search structure...")
-
-        print("Intersected trapezoids:")
-        for delta in old_ts:
-            print(delta)
-
-        print("New trapezoids:")
-        print(new_ts)
+        print("\n>>> Updating the search structure...")
 
         # Check the number of intersected trapezoids.
         if len(old_ts) == 1:
@@ -333,7 +334,7 @@ class SearchStructure:
             ns_list = []
             for i in range(len(old_ts)):
                 ns = YNode(s)
-                ns_list.append(YNode(s))
+                ns_list.append(ns)
 
                 # Set the children of the Y-node.
                 ns.set_left_child(upper[i].leaf)
@@ -356,6 +357,14 @@ class SearchStructure:
                     elif parent.right_child == old:
                         parent.set_right_child(ns)
 
+            print("X-nodes:")
+            print(np)
+            print(nq)
+
+            print("Y-nodes:")
+            for ns in ns_list:
+                print(ns)
+
     def query(self, q: Point) -> Optional[Trapezoid]:
         """Queries a point in the search structure.
 
@@ -368,6 +377,8 @@ class SearchStructure:
         Returns:
             Optional[Trapezoid]: The trapezoid that contains the query point.
         """
+
+        print("Querying point " + str(q) + "...")
 
         # Start from the root of the search structure.
         node = self.root
@@ -483,7 +494,7 @@ class Subdivision:
 
         # Get the list of segments and shuffle it.
         segments = list(self.segments)
-        # random.shuffle(segments)
+        random.shuffle(segments)
 
         # Iteratively build the trapezoidal map.
         for i in range(len(segments)):

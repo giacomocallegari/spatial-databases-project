@@ -92,29 +92,29 @@ class Node:
 
         # If the node is a leaf, it represents a trapezoid.
         if isinstance(self, LeafNode):
-            # print("leaf\n\n")
+            print(get_id(self.trapezoid))
             return self.trapezoid
         else:
             # If the node is an X-node, it represents an endpoint.
             if isinstance(self, XNode):
                 if q.lies_left(self.point):
-                    # print("<-\t" + str(self.point))
+                    print("<-\t" + str(self.point))
                     nnext = self.left_child
                 else:
-                    # print("->\t" + str(self.point))
+                    print("->\t" + str(self.point))
                     nnext = self.right_child
 
             # If the node is a Y-node, it represents as segment.
             elif isinstance(self, YNode):
                 if q.lies_above(self.segment):
-                    # print("/\\\t" + str(self.segment))
+                    print("/\\\t" + str(self.segment))
                     nnext = self.left_child
                 else:
-                    # print("\\/\t" + str(self.segment))
+                    print("\\/\t" + str(self.segment))
                     nnext = self.right_child
 
             else:
-                # print("Error: Wrong node type.")
+                print("Error: Wrong node type.")
                 return
 
             # Recursively traverse the DAG.
