@@ -163,7 +163,7 @@ class TrapezoidalMap:
     def update(self, s: Segment, deltas: List[Trapezoid]) -> None:
         """Updates the trapezoidal map after some trapezoids have been intersected by the segment.
 
-        The intersected trapezoids are removed and replaced with the new ones.
+        The intersected trapezoids are removed and replaced with the new ones. The search structure is also updated.
 
         Args:
             s (Segment): The segment.
@@ -243,7 +243,7 @@ class TrapezoidalMap:
 
 
 class SearchStructure:
-    """Class for the search structure.
+    """Class for search structures.
 
     The search structure is a directed acyclic graph (DAG) used to query the location of points in trapezoids.
     All inner nodes have an out-degree of exactly 2 and can be X-nodes (endpoints) or Y-nodes (segments). Each leaf of
@@ -357,9 +357,7 @@ class SearchStructure:
                     elif parent.right_child == old:
                         parent.set_right_child(ns)
 
-            print("X-nodes:")
-            print(np)
-            print(nq)
+            print("X-nodes:\n" + str(np) + "\n" + str(nq))
 
             print("Y-nodes:")
             for ns in ns_list:
@@ -504,5 +502,8 @@ class Subdivision:
             # Find the intersected trapezoids.
             deltas = self.T.follow_segment(segments[i])
 
-            # Update the trapezoidal map.
+            # Update the trapezoidal map and the search structure.
             self.T.update(segments[i], deltas)
+
+        print("\n" + 80 * "~")
+        print("Construction completed.")

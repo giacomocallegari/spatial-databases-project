@@ -5,7 +5,7 @@ from src.util import *
 
 
 class Node:
-    """Class for the nodes of the search structure.
+    """Class for the nodes of a search structure.
 
     Attributes:
         parents (Set[Node]): The parents.
@@ -122,7 +122,7 @@ class Node:
 
 
 class XNode(Node):
-    """Class for X-nodes of the search structure.
+    """Class for X-nodes of a search structure.
 
     Attributes:
         point (Point): The referenced endpoint.
@@ -140,7 +140,7 @@ class XNode(Node):
 
 
 class YNode(Node):
-    """Class for Y-nodes of the search structure.
+    """Class for Y-nodes of a search structure.
 
     Attributes:
         segment (Segment): The referenced segment.
@@ -158,7 +158,7 @@ class YNode(Node):
 
 
 class LeafNode(Node):
-    """Class for leaf nodes of the search structure.
+    """Class for leaf nodes of a search structure.
 
     Attributes:
         trapezoid (Trapezoid): The referenced trapezoid.
