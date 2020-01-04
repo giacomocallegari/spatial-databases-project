@@ -254,7 +254,6 @@ class SearchStructure:
     the DAG represents a trapezoid.
 
     Attributes:
-        nodes (Set[Node]): The set of nodes.
         root (Node): The root of the directed acyclic graph.
     """
 
@@ -267,11 +266,8 @@ class SearchStructure:
 
         print("Initializing the search structure...")
 
-        self.nodes = set()
-
         # Create the root and add it to the set of nodes.
         self.root = R.leaf
-        self.add_node(self.root)
 
     def __str__(self) -> str:
         """Returns the string representation of a SearchStructure object.
@@ -280,32 +276,6 @@ class SearchStructure:
         res = "root:" + str(self.root)
 
         return res
-
-    def add_node(self, node: Node) -> None:
-        """Adds a node to the set of the search structure.
-
-        Args:
-            node: The node to add.
-        """
-
-        self.nodes.add(node)
-
-    def remove_node(self, node: Node) -> None:
-        """Removes a node from the set of the search structure.
-
-        Args:
-            node: The node to remove.
-        """
-
-        for member in self.nodes:
-            if node == member.left:
-                member.set_left_child(None)
-            elif node == member.right:
-                member.set_right_child(None)
-            elif node in member.parents:
-                member.remove_parent(node)
-
-        self.nodes.discard(node)
 
     def update(self, s: Segment, old_ts: List[Trapezoid], new_ts: NewTrapezoids) -> None:
         """Updates the search structure after some trapezoids have been intersected by the segment.
