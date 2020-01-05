@@ -458,11 +458,11 @@ class Subdivision:
             # Set the vertical extremes.
             if p.y < min_y:
                 min_y = p.y
-            elif p.y > max_y:
+            if p.y > max_y:
                 max_y = p.y
             if q.y < min_y:
                 min_y = q.y
-            elif q.y > max_y:
+            if q.y > max_y:
                 max_y = q.y
 
         # Get the extreme coordinates of the subdivision and add a margin of 1 to each side.
