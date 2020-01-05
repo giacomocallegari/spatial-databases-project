@@ -54,14 +54,15 @@ class Point:
 
         x = self.x
         y = self.y
-        x1 = s.p.x
-        y1 = s.p.y
-        x2 = s.q.x
-        y2 = s.q.y
+        px = s.p.x
+        py = s.p.y
+        qx = s.q.x
+        qy = s.q.y
 
-        v1 = (x2 - x1, y2 - y1)
-        v2 = (x2 - x, y2 - y)
+        v1 = (qx - px, qy - py)
+        v2 = (qx - x, qy - y)
 
+        # Compute the cross product between the vectors.
         xp = (v1[0] * v2[1]) - (v1[1] * v2[0])
 
         return xp <= 0

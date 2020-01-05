@@ -2,7 +2,7 @@ import random
 from typing import *
 
 from src.geometry import Segment, Point, Trapezoid
-from src.nodes import Node, XNode, YNode
+from src.nodes import Node, XNode, YNode, LeafNode
 from src.util import *
 
 
@@ -143,8 +143,28 @@ class TrapezoidalMap:
         # Get the endpoints of the segment.
         p, q = s.p, s.q
 
-        # Find the first intersected trapezoid.
-        curr = self.D.query(p)
+        # Query the segment's left endpoint on the search structure.
+        node = self.D.root.traverse(p)
+
+        while isinstance(node, XNode):
+            # Move the left endpoint to the right along the segment by an epsilon.
+            from sys import float_info as fi
+            m = (q.y - p.y) / (q.x - p.x)
+            print("m = " + str(m))
+            new_x = p.x + fi.epsilon
+            new_y = p.y + m * fi.epsilon
+            new_p = Point(new_x, new_y)
+
+            print("The endpoint already exists. Retrying with " + str(new_p) + "...")
+
+            # Restart the traversal from the current X-node.
+            node = node.traverse(new_p)
+
+        if isinstance(node, LeafNode):
+            curr = node.trapezoid
+        else:
+            curr = None
+
         deltas.append(curr)
 
         # Iteratively find the next intersected trapezoids.
@@ -185,8 +205,12 @@ class TrapezoidalMap:
             C = Trapezoid(old.top, s, s.p, s.q)  # Upper trapezoid
             D = Trapezoid(s, old.bottom, s.p, s.q)  # Lower trapezoid
 
+            if A.leftp == A.rightp:
+                A = None
+            else:
+                A.set_neighbors(old.uln, old.lln, C, D)
+
             # Set the neighbors of the new trapezoids.
-            A.set_neighbors(old.uln, old.lln, C, D)
             B.set_neighbors(C, D, old.urn, old.lrn)
             C.set_neighbors(A, None, B, None)
             D.set_neighbors(None, A, None, B)
@@ -197,6 +221,8 @@ class TrapezoidalMap:
 
             new_ts = NewTrapezoids(A, B, [C], [D])
         else:
+            # TODO: Handle no first trapezoid
+
             print("Multiple trapezoids detected.")
 
             # Split the intermediate intersected trapezoids into their upper and lower parts.
@@ -299,29 +325,37 @@ class SearchStructure:
             D = new_ts.lower[0]
 
             # Create the inner nodes.
-            np = XNode(s.p)
             nq = XNode(s.q)
             ns = YNode(s)
 
             # Add the edges to create a subtree.
-            np.set_left_child(A.leaf)
-            np.set_right_child(nq)
             nq.set_left_child(ns)
             nq.set_right_child(B.leaf)
             ns.set_left_child(C.leaf)
             ns.set_right_child(D.leaf)
 
+            # Check whether A exists.
+            if A is not None:
+                np = XNode(s.p)
+                np.set_left_child(A.leaf)
+                np.set_right_child(nq)
+                sub_root = np
+            else:
+                sub_root = nq
+
             # Replace the old leaf with the new subtree where needed.
             if self.root == old:
-                self.root = np
+                self.root = sub_root
             else:
                 for parent in old.parents:
                     if parent.left_child == old:
-                        parent.set_left_child(np)
+                        parent.set_left_child(sub_root)
                     elif parent.right_child == old:
-                        parent.set_right_child(np)
+                        parent.set_right_child(sub_root)
 
         else:
+            # TODO: Handle no first trapezoid
+
             # Get the new trapezoids.
             first = new_ts.first
             last = new_ts.last
@@ -366,8 +400,8 @@ class SearchStructure:
     def query(self, q: Point) -> Optional[Trapezoid]:
         """Queries a point in the search structure.
 
-        Querying a point consists in a recursive traversal of the search structure's DAG, from the root to a leaf.
-        Once the trapezoid has been obtained, the corresponding face of the original subdivision can be found.
+        Querying a point consists in a recursive traversal of the search structure's DAG, starting from the root.
+        If the traversal reaches a leaf, the corresponding trapezoid is returned. Otherwise, the query has failed.
 
         Args:
             q (Point): The query point.
@@ -381,8 +415,14 @@ class SearchStructure:
         # Start from the root of the search structure.
         node = self.root
 
-        # Traverse the search structure until a leaf is reached.
-        face = node.traverse(q)
+        # Traverse the search structure.
+        res = node.traverse(q)
+
+        # Check whether a leaf node has been reached.
+        if isinstance(res, LeafNode):
+            face = res.trapezoid
+        else:
+            face = None
 
         return face
 

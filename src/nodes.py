@@ -74,8 +74,8 @@ class Node:
         if child is not None:
             child.add_parent(self)
 
-    def traverse(self, q: Point) -> Optional[Trapezoid]:
-        """Recursively traverses the search structure until a leaf is reached.
+    def traverse(self, q: Point) -> Optional["Node"]:
+        """Recursively traverses the search structure until a leaf, or an X-node if the point is already present.
 
         In the search structure, each leaf represents a trapezoid of the refined subdivision. The search starts from the
         root and, by evaluating the inner nodes, a path to a leaf is obtained.
@@ -87,22 +87,26 @@ class Node:
             q (Point): The query point.
 
         Returns:
-            Optional[Trapezoid]: The resulting trapezoid.
+            Optional[Node]: The resulting node.
         """
 
         # If the node is a leaf, it represents a trapezoid.
         if isinstance(self, LeafNode):
             print(get_id(self.trapezoid))
-            return self.trapezoid
+            return self
         else:
             # If the node is an X-node, it represents an endpoint.
             if isinstance(self, XNode):
-                if q.lies_left(self.point):
-                    print("<-\t" + str(self.point))
-                    nnext = self.left_child
+                if q.x == self.point.x and q.y == self.point.y:
+                    # Stop the traversal at the current X-node.
+                    return self
                 else:
-                    print("->\t" + str(self.point))
-                    nnext = self.right_child
+                    if q.lies_left(self.point):
+                        print("<-\t" + str(self.point))
+                        nnext = self.left_child
+                    else:
+                        print("->\t" + str(self.point))
+                        nnext = self.right_child
 
             # If the node is a Y-node, it represents as segment.
             elif isinstance(self, YNode):
