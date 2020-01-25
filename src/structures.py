@@ -147,15 +147,14 @@ class TrapezoidalMap:
         node = self.D.root.traverse(p)
 
         while isinstance(node, XNode):
-            # Move the left endpoint to the right along the segment by an epsilon.
-            from sys import float_info as fi
+            # Move the query point to the right by an epsilon, in the direction of the segment.
             m = (q.y - p.y) / (q.x - p.x)
-            print("m = " + str(m))
-            new_x = p.x + fi.epsilon
-            new_y = p.y + m * fi.epsilon
+            epsilon = 0.0000001
+            new_x = p.x + epsilon
+            new_y = p.y + m * epsilon
             new_p = Point(new_x, new_y)
 
-            print("The endpoint already exists. Retrying with " + str(new_p) + "...")
+            print("The endpoint " + str(p) + " already exists. Retrying the query with " + str(new_p) + "...")
 
             # Restart the traversal from the current X-node.
             node = node.traverse(new_p)

@@ -92,7 +92,7 @@ class Node:
 
         # If the node is a leaf, it represents a trapezoid.
         if isinstance(self, LeafNode):
-            print(get_id(self.trapezoid))
+            print("Trapezoid ID: " + get_id(self.trapezoid))
             return self
         else:
             # If the node is an X-node, it represents an endpoint.
