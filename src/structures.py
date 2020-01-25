@@ -193,6 +193,8 @@ class TrapezoidalMap:
 
         # Check whether one or more trapezoids have been intersected.
         if len(deltas) == 1:
+            # TODO: Handle no last trapezoid
+
             print("Single trapezoid detected.")
 
             # Get the single intersected trapezoid.
@@ -204,15 +206,16 @@ class TrapezoidalMap:
             C = Trapezoid(old.top, s, s.p, s.q)  # Upper trapezoid
             D = Trapezoid(s, old.bottom, s.p, s.q)  # Lower trapezoid
 
+            # Set the neighbors of the new trapezoids.
             if A.leftp == A.rightp:
                 A = None
+                C.set_neighbors(old.uln, None, B, None)
+                D.set_neighbors(None, old.lln, None, B)
             else:
                 A.set_neighbors(old.uln, old.lln, C, D)
-
-            # Set the neighbors of the new trapezoids.
+                C.set_neighbors(A, None, B, None)
+                D.set_neighbors(None, A, None, B)
             B.set_neighbors(C, D, old.urn, old.lrn)
-            C.set_neighbors(A, None, B, None)
-            D.set_neighbors(None, A, None, B)
 
             # Remove the old trapezoid and add the new ones.
             self.remove_trapezoid(old)
@@ -220,7 +223,7 @@ class TrapezoidalMap:
 
             new_ts = NewTrapezoids(A, B, [C], [D])
         else:
-            # TODO: Handle no first trapezoid
+            # TODO: Handle no first/last trapezoid
 
             print("Multiple trapezoids detected.")
 
@@ -236,7 +239,10 @@ class TrapezoidalMap:
 
             # Create the leftmost and rightmost new trapezoids.
             first = Trapezoid(deltas[0].top, deltas[0].bottom, deltas[0].leftp, s.p)
-            first.set_neighbors(deltas[0].uln, deltas[0].lln, upper[0], lower[0])
+            if first.leftp == first.rightp:
+                first = None
+            else:
+                first.set_neighbors(deltas[0].uln, deltas[0].lln, upper[0], lower[0])
             last = Trapezoid(deltas[-1].top, deltas[-1].bottom, s.q, deltas[-1].rightp)
             last.set_neighbors(upper[-1], lower[-1], deltas[-1].urn, deltas[-1].lrn)
 
@@ -324,77 +330,85 @@ class SearchStructure:
             D = new_ts.lower[0]
 
             # Create the inner nodes.
-            nq = XNode(s.q)
+            np = XNode(s.p)
             ns = YNode(s)
+            nq = XNode(s.q)
+            sub_root = None
 
-            # Add the edges to create a subtree.
-            nq.set_left_child(ns)
-            nq.set_right_child(B.leaf)
+            # Add the leaves of the intermediate trapezoids.
             ns.set_left_child(C.leaf)
             ns.set_right_child(D.leaf)
 
-            # Check whether A exists.
-            if A is not None:
-                np = XNode(s.p)
+            # Create the subtree depending from the existence of A and B.
+            if A is not None and B is not None:
+                nq.set_left_child(ns)
+                nq.set_right_child(B.leaf)
                 np.set_left_child(A.leaf)
                 np.set_right_child(nq)
                 sub_root = np
-            else:
+            if A is not None and B is None:
+                np.set_left_child(A.leaf)
+                np.set_right_child(ns)
+                sub_root = np
+            if A is None and B is not None:
+                nq.set_left_child(ns)
+                nq.set_right_child(B.leaf)
                 sub_root = nq
 
-            # Replace the old leaf with the new subtree where needed.
-            if self.root == old:
-                self.root = sub_root
-            else:
-                for parent in old.parents:
-                    if parent.left_child == old:
-                        parent.set_left_child(sub_root)
-                    elif parent.right_child == old:
-                        parent.set_right_child(sub_root)
+            if sub_root is not None:
+                # Replace the old leaf with the new subtree where needed.
+                if self.root == old:
+                    self.root = sub_root
+                else:
+                    sub_root.replace_leaf(old)
 
         else:
-            # TODO: Handle no first trapezoid
-
             # Get the new trapezoids.
             first = new_ts.first
             last = new_ts.last
             upper = new_ts.upper
             lower = new_ts.lower
 
-            # Create the inner nodes.
-            np = XNode(s.p)
-            nq = XNode(s.q)
+            # Replace each intermediate leaf with the corresponding Y-node.
             ns_list = []
             for i in range(len(old_ts)):
                 ns = YNode(s)
+                old = old_ts[i].leaf
                 ns_list.append(ns)
 
                 # Set the children of the Y-node.
                 ns.set_left_child(upper[i].leaf)
                 ns.set_right_child(lower[i].leaf)
 
-            # Replace the leftmost and rightmost leaves with X-nodes.
-            np.set_left_child(first.leaf)
-            np.set_right_child(ns_list[0])
-            nq.set_left_child(ns_list[-1])
-            nq.set_right_child(last.leaf)
+                # Replace the leaf of the old trapezoid.
+                ns.replace_leaf(old)
 
-            # Replace each intermediate leaf with a Y-node.
-            for i in range(len(ns_list)):
-                old = old_ts[i].leaf
-                ns = ns_list[i]
+            # Replace the leftmost and rightmost leaves with X-nodes if needed.
+            np = None
+            nq = None
+            if first is not None:
+                np = XNode(s.p)
+                np.set_left_child(first.leaf)
+                np.set_right_child(ns_list[0])
 
-                for parent in old.parents:
-                    if parent.left_child == old:
-                        parent.set_left_child(ns)
-                    elif parent.right_child == old:
-                        parent.set_right_child(ns)
+                old_first = first.leaf
+                np.replace_leaf(old_first)
+            if last is not None:
+                nq = XNode(s.q)
+                nq.set_left_child(ns_list[-1])
+                nq.set_right_child(last.leaf)
 
-            print("X-nodes:\n" + str(np) + "\n" + str(nq))
+                old_last = last.leaf
+                nq.replace_leaf(old_last)
+
+            print("X-nodes:")
+            for x_node in [np, nq]:
+                if x_node is not None:
+                    print(x_node)
 
             print("Y-nodes:")
-            for ns in ns_list:
-                print(ns)
+            for y_node in ns_list:
+                print(y_node)
 
     def query(self, q: Point) -> Optional[Trapezoid]:
         """Queries a point in the search structure.
@@ -531,7 +545,7 @@ class Subdivision:
 
         # Get the list of segments and shuffle it.
         segments = list(self.segments)
-        random.shuffle(segments)
+        #random.shuffle(segments)
 
         # Iteratively build the trapezoidal map.
         for i in range(len(segments)):

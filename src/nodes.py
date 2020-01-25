@@ -74,6 +74,22 @@ class Node:
         if child is not None:
             child.add_parent(self)
 
+    def replace_leaf(self, old: "Node") -> None:
+        """Replaces an existing leaf by updating the children of all its parents.
+
+        Args:
+            old (Node): The leaf to replace.
+        """
+
+        # Iterate over all the parents of the old leaf.
+        for parent in old.parents:
+            if old == parent.left_child:
+                # Become the new left child.
+                parent.set_left_child(self)
+            elif parent.right_child == old:
+                # Become the new right child.
+                parent.set_right_child(self)
+
     def traverse(self, q: Point) -> Optional["Node"]:
         """Recursively traverses the search structure until a leaf, or an X-node if the point is already present.
 
