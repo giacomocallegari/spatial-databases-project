@@ -1,5 +1,0 @@
-## ALGORITHM ##
--Create the required data structures from the subdivision
-    -Trapezoidal map
-    -Search structure
--Test the algorithm on a sample subdivision

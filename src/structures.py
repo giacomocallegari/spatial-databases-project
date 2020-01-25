@@ -193,8 +193,6 @@ class TrapezoidalMap:
 
         # Check whether one or more trapezoids have been intersected.
         if len(deltas) == 1:
-            # TODO: Handle no last trapezoid
-
             print("Single trapezoid detected.")
 
             # Get the single intersected trapezoid.
@@ -206,16 +204,27 @@ class TrapezoidalMap:
             C = Trapezoid(old.top, s, s.p, s.q)  # Upper trapezoid
             D = Trapezoid(s, old.bottom, s.p, s.q)  # Lower trapezoid
 
-            # Set the neighbors of the new trapezoids.
-            if A.leftp == A.rightp:
-                A = None
-                C.set_neighbors(old.uln, None, B, None)
-                D.set_neighbors(None, old.lln, None, B)
+            # Get the default neighbors.
+            uln = old.uln
+            lln = old.lln
+            urn = old.urn
+            lrn = old.lrn
+
+            # Set the neighbors of each new trapezoid.
+            if A.leftp != A.rightp:
+                A.set_neighbors(uln, lln, C, D)
+                uln = A
+                lln = A
             else:
-                A.set_neighbors(old.uln, old.lln, C, D)
-                C.set_neighbors(A, None, B, None)
-                D.set_neighbors(None, A, None, B)
-            B.set_neighbors(C, D, old.urn, old.lrn)
+                A = None
+            if B.leftp != B.rightp:
+                B.set_neighbors(C, D, urn, lrn)
+                urn = B
+                lrn = B
+            else:
+                B = None
+            C.set_neighbors(uln, None, urn, None)
+            D.set_neighbors(None, lln, None, lrn)
 
             # Remove the old trapezoid and add the new ones.
             self.remove_trapezoid(old)
@@ -223,8 +232,6 @@ class TrapezoidalMap:
 
             new_ts = NewTrapezoids(A, B, [C], [D])
         else:
-            # TODO: Handle no first/last trapezoid
-
             print("Multiple trapezoids detected.")
 
             # Split the intermediate intersected trapezoids into their upper and lower parts.
@@ -237,18 +244,31 @@ class TrapezoidalMap:
             print("Merging the lower parts...")
             lower = merge_trapezoids(lower_split)
 
-            # Create the leftmost and rightmost new trapezoids.
+            # Get the default neighbors.
+            uln = deltas[0].uln
+            lln = deltas[0].lln
+            urn = deltas[-1].urn
+            lrn = deltas[-1].lrn
+
+            # Check the existence of the leftmost and rightmost new trapezoids.
             first = Trapezoid(deltas[0].top, deltas[0].bottom, deltas[0].leftp, s.p)
-            if first.leftp == first.rightp:
-                first = None
-            else:
-                first.set_neighbors(deltas[0].uln, deltas[0].lln, upper[0], lower[0])
             last = Trapezoid(deltas[-1].top, deltas[-1].bottom, s.q, deltas[-1].rightp)
-            last.set_neighbors(upper[-1], lower[-1], deltas[-1].urn, deltas[-1].lrn)
+            if first.leftp != first.rightp:
+                first.set_neighbors(uln, lln, upper[0], lower[0])
+                uln = first
+                lln = first
+            else:
+                first = None
+            if last.leftp != last.rightp:
+                last.set_neighbors(upper[-1], lower[-1], urn, lrn)
+                urn = last
+                lrn = last
+            else:
+                last = None
 
             # Set the neighbors of each merged trapezoid.
-            update_neighbors(upper, first, last, True)
-            update_neighbors(lower, first, last, False)
+            update_neighbors(upper, uln, urn, True)
+            update_neighbors(lower, lln, lrn, False)
 
             # Remove the old trapezoids and add the new ones.
             for delta in deltas:
