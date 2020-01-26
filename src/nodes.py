@@ -126,12 +126,16 @@ class Node:
 
             # If the node is a Y-node, it represents as segment.
             elif isinstance(self, YNode):
-                if q.lies_above(self.segment):
-                    print("/\\\t" + str(self.segment))
-                    nnext = self.left_child
+                if q.x == self.segment.p.x and q.y == self.segment.p.y:
+                    # Stop the traversal at the current Y-node.
+                    return self
                 else:
-                    print("\\/\t" + str(self.segment))
-                    nnext = self.right_child
+                    if q.lies_above(self.segment):
+                        print("/\\\t" + str(self.segment))
+                        nnext = self.left_child
+                    else:
+                        print("\\/\t" + str(self.segment))
+                        nnext = self.right_child
 
             else:
                 print("Error: Wrong node type.")

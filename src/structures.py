@@ -109,7 +109,8 @@ class TrapezoidalMap:
             trapezoid (Trapezoid): The trapezoid to add.
         """
 
-        self.trapezoids.add(trapezoid)
+        if trapezoid is not None:
+            self.trapezoids.add(trapezoid)  # TODO: Only keep valid trapezoids
 
     def remove_trapezoid(self, trapezoid: Trapezoid) -> None:
         """Removes a trapezoid from the trapezoidal map.
@@ -146,7 +147,7 @@ class TrapezoidalMap:
         # Query the segment's left endpoint on the search structure.
         node = self.D.root.traverse(p)
 
-        while isinstance(node, XNode):
+        while not isinstance(node, LeafNode):
             # Move the query point to the right by an epsilon, in the direction of the segment.
             m = (q.y - p.y) / (q.x - p.x)
             epsilon = 0.0000001
@@ -156,7 +157,7 @@ class TrapezoidalMap:
 
             print("The endpoint " + str(p) + " already exists. Retrying the query with " + str(new_p) + "...")
 
-            # Restart the traversal from the current X-node.
+            # Restart the traversal from the current node.
             node = node.traverse(new_p)
 
         if isinstance(node, LeafNode):
@@ -267,8 +268,10 @@ class TrapezoidalMap:
                 last = None
 
             # Set the neighbors of each merged trapezoid.
-            update_neighbors(upper, uln, urn, True)
-            update_neighbors(lower, lln, lrn, False)
+            print("Updating neighbors of the upper trapezoids...")
+            update_neighbors(upper_split, upper, uln, urn, True)
+            print("Updating the neighbors of the lower trapezoids...")
+            update_neighbors(lower_split, lower, lln, lrn, False)
 
             # Remove the old trapezoids and add the new ones.
             for delta in deltas:
@@ -374,6 +377,8 @@ class SearchStructure:
                 nq.set_left_child(ns)
                 nq.set_right_child(B.leaf)
                 sub_root = nq
+            if A is None and B is None:
+                sub_root = ns
 
             if sub_root is not None:
                 # Replace the old leaf with the new subtree where needed.
@@ -565,7 +570,7 @@ class Subdivision:
 
         # Get the list of segments and shuffle it.
         segments = list(self.segments)
-        #random.shuffle(segments)
+        random.shuffle(segments)
 
         # Iteratively build the trapezoidal map.
         for i in range(len(segments)):

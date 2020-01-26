@@ -24,6 +24,8 @@ def get_id(obj: Optional[object]) -> str:
 def split_trapezoids(s: Segment, deltas: List[Trapezoid]) -> (List[Trapezoid], List[Trapezoid]):
     """Splits the trapezoids intersected by a segment into their upper and lower parts.
 
+    The resulting trapezoids maintain the relevant neighbors that will be used to initialize the merged trapezoids.
+
     Args:
         s (Segment): The segment.
         deltas (List[Trapezoid]): The list of intersected trapezoids.
@@ -36,18 +38,33 @@ def split_trapezoids(s: Segment, deltas: List[Trapezoid]) -> (List[Trapezoid], L
     lower = []
 
     # Add the leftmost trapezoids.
-    upper.append(Trapezoid(deltas[0].top, s, s.p, deltas[0].rightp))
-    lower.append(Trapezoid(s, deltas[0].bottom, s.p, deltas[0].rightp))
+    left_upper = Trapezoid(deltas[0].top, s, s.p, deltas[0].rightp)
+    left_upper.set_neighbors(None, None, deltas[0].urn, None)
+    upper.append(left_upper)
+    left_lower = Trapezoid(s, deltas[0].bottom, s.p, deltas[0].rightp)
+    left_lower.set_neighbors(None, None, None, deltas[0].lrn)
+    lower.append(left_lower)
 
     # Add the intermediate trapezoids.
     for i in range(1, len(deltas) - 1):
+        # Get the intersected trapezoid.
         curr = deltas[i]
-        upper.append(Trapezoid(curr.top, s, curr.leftp, curr.rightp))
-        lower.append(Trapezoid(s, curr.bottom, curr.leftp, curr.rightp))
+
+        # Split the trapezoid.
+        curr_upper = Trapezoid(curr.top, s, curr.leftp, curr.rightp)
+        curr_upper.set_neighbors(curr.uln, None, curr.urn, None)
+        upper.append(curr_upper)
+        curr_lower = Trapezoid(s, curr.bottom, curr.leftp, curr.rightp)
+        curr_lower.set_neighbors(None, curr.lln, None, curr.lrn)
+        lower.append(curr_lower)
 
     # Add the rightmost trapezoids.
-    upper.append(Trapezoid(deltas[-1].top, s, deltas[-1].leftp, s.q))
-    lower.append(Trapezoid(s, deltas[-1].bottom, deltas[-1].leftp, s.q))
+    right_upper = Trapezoid(deltas[-1].top, s, deltas[-1].leftp, s.q)
+    right_upper.set_neighbors(deltas[-1].uln, None, None, None)
+    upper.append(right_upper)
+    right_lower = Trapezoid(s, deltas[-1].bottom, deltas[-1].leftp, s.q)
+    right_lower.set_neighbors(None, deltas[-1].lln, None, None)
+    lower.append(right_lower)
 
     return upper, lower
 
@@ -94,46 +111,44 @@ def merge_trapezoids(parts: List[Trapezoid]) -> List[Trapezoid]:
     return res
 
 
-def update_neighbors(adj_list: List[Trapezoid], ln: Trapezoid, rn: Trapezoid, above: bool) -> None:
+def update_neighbors(s_list: List[Trapezoid], m_list: List[Trapezoid], first: Trapezoid, last: Trapezoid,
+                     above: bool) -> None:
     """Updates the neighbors of a list of trapezoids that share the same non-vertical side.
 
     Args:
-        adj_list (List[Trapezoids]): The mapping from the original trapezoids to the merged ones.
-        ln: The left neighbor of the leftmost trapezoid.
-        rn: The right neighbor of the rightmost trapezoid.
+        m_list (List[Trapezoids]): The mapping from the split trapezoids to the merged ones.
+        s_list (List[Trapezoids]): The list of split trapezoids.
+        first (Trapezoid): The leftmost neighbor.
+        last (Trapezoid): The rightmost neighbor.
         above (bool): True if the trapezoids share the bottom side, False if they share the top side.
     """
 
-    # Remove consecutive duplicates from the list of adjacent trapezoids.
-    from itertools import groupby
-    deltas = [x[0] for x in groupby(adj_list)]
+    k = 0
+    size = len(m_list)
 
-    if len(deltas) > 1:
-        # Set the neighbors of the leftmost trapezoid.
+    while k < size:
+        old = s_list[k]
+        curr = m_list[k]
+
+        pred = m_list[k - 1] if k > 0 else None
+        succ = curr
+
+        # Iterate while the successor is a duplicate of the current trapezoid.
+        while curr == succ:
+            k += 1
+            succ = m_list[k] if k < size else None
+
+        # Check whether the upper or the lower trapezoids are being addressed.
         if above:
-            deltas[0].set_neighbors(ln, None, None, deltas[1])
+            uln = old.uln if k > 0 else first
+            lln = pred
+            urn = old.urn if k < size - 1 else last
+            lrn = succ
         else:
-            deltas[0].set_neighbors(None, ln, deltas[1], None)
+            uln = pred
+            lln = old.lln if k > 0 else first
+            urn = succ
+            lrn = old.lrn if k < size - 1 else last
 
-        # Set the neighbors of the intermediate trapezoids.
-        for i in range(1, len(deltas) - 1):
-            pred = deltas[i - 1]
-            curr = deltas[i]
-            succ = deltas[i + 1]
-
-            if above:
-                curr.set_neighbors(None, pred, None, succ)
-            else:
-                curr.set_neighbors(pred, None, succ, None)
-
-        # Set the neighbors of the rightmost trapezoid.
-        if above:
-            deltas[-1].set_neighbors(None, deltas[-2], rn, None)
-        else:
-            deltas[-1].set_neighbors(deltas[-2], None, None, rn)
-    else:
-        # Set the neighbors of the only trapezoid.
-        if above:
-            deltas[0].set_neighbors(ln, None, rn, None)
-        else:
-            deltas[0].set_neighbors(None, ln, None, rn)
+        # Set the neighbors of the current trapezoid.
+        curr.set_neighbors(uln, lln, urn, lrn)
