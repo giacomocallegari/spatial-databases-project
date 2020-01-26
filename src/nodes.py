@@ -33,10 +33,10 @@ class Node:
         return res
 
     def add_parent(self, parent: "Node") -> None:
-        """Adds a new parent to the current node.
+        """Adds a new parent for the current node.
 
         Args:
-            parent: The new parent.
+            parent (Node): The new parent.
         """
 
         self.parents.add(parent)
@@ -58,6 +58,7 @@ class Node:
         self.left_child = child
 
         if child is not None:
+            # Add the current node as a parent of the child.
             child.add_parent(self)
 
     def set_right_child(self, child: Optional["Node"]) -> None:
@@ -70,6 +71,7 @@ class Node:
         self.right_child = child
 
         if child is not None:
+            # Add the current node as a parent of the child.
             child.add_parent(self)
 
     def replace_leaf(self, old: "Node") -> None:

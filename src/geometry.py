@@ -107,6 +107,9 @@ class Segment:
 class Trapezoid:
     """Class for trapezoids.
 
+    A trapezoid is defined by two non-vertical segments and two generator endpoints. In general position, at most four
+    neighbors are referenced. The corresponding leaf in the search structure is also maintained.
+
     Attributes:
         top (Segment): The top non-vertical segment.
         bottom (Segment): The bottom non-vertical segment.
@@ -141,6 +144,7 @@ class Trapezoid:
         self.urn = None
         self.lrn = None
 
+        # Create a new leaf associated to the trapezoid.
         self.leaf = LeafNode(self)
 
     def __str__(self) -> str:
@@ -163,11 +167,13 @@ class Trapezoid:
                       urn: Optional["Trapezoid"], lrn: Optional["Trapezoid"]) -> None:
         """Sets the neighbors of the trapezoid.
 
+        Such neighbors are notified of the update in order to maintain symmetric references.
+
         Args:
-            uln: The upper left neighbor.
-            lln: The lower left neighbor.
-            urn: The upper right neighbor.
-            lrn: The lower right neighbor.
+            uln (Optional[Trapezoid]): The upper left neighbor.
+            lln (Optional[Trapezoid]): The lower left neighbor.
+            urn (Optional[Trapezoid]): The upper right neighbor.
+            lrn (Optional[Trapezoid]): The lower right neighbor.
         """
 
         # Update the neighbors of the current node.
@@ -176,7 +182,7 @@ class Trapezoid:
         self.urn = urn
         self.lrn = lrn
 
-        # Notify the neighbors of this update.
+        # Notify the neighbors of the update.
         if uln is not None:
             uln.urn = self
         if lln is not None:

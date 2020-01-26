@@ -15,8 +15,8 @@ class NewTrapezoids:
     Attributes:
         first (Optional[Trapezoid]): The trapezoid to the left of the segment.
         last (Optional[Trapezoid]): The trapezoid to the right of the segment.
-        upper (List[Trapezoid]): The list of trapezoids above the segment.
-        lower (List[Trapezoid]): The list of trapezoids below the segment.
+        upper (List[Trapezoid]): The expanded list of merged trapezoids above the segment.
+        lower (List[Trapezoid]): The expanded list of merged trapezoids below the segment.
     """
 
     def __init__(self, first: Optional[Trapezoid], last: Optional[Trapezoid],
@@ -72,7 +72,7 @@ class TrapezoidalMap:
 
     Attributes:
         trapezoids (Set[Trapezoids]): The set of trapezoids.
-        D (SearchStructure): The search structure.
+        D (SearchStructure): The corresponding search structure.
     """
 
     def __init__(self, R: Trapezoid) -> None:
@@ -502,18 +502,18 @@ class SearchStructure:
 class Subdivision:
     """Class for subdivisions.
 
-    A subdivision is a set of non-crossing segments that divide a plane. These segments can have common endpoints.
+    A subdivision is a set of non-crossing segments on a plane. These segments can share common endpoints.
 
     Attributes:
-        segments (Set[Segment]): The list of segments.
-        T (TrapezoidalMap): The trapezoidal map.
+        segments (Set[Segment]): The set of segments.
+        T (TrapezoidalMap): The corresponding trapezoidal map.
     """
 
     def __init__(self, segments: Set[Segment]) -> None:
         """Initializes a Subdivision object.
 
         Args:
-            segments (Set[Segment]): The list of segments.
+            segments (Set[Segment]): The set of segments.
         """
 
         self.segments = segments
