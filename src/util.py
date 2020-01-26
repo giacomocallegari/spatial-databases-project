@@ -133,20 +133,24 @@ def update_neighbors(s_list: List[Trapezoid], m_list: List[Trapezoid], first: Tr
         pred = m_list[k - 1] if k > 0 else None
         succ = curr
 
+        # Obtain the left neighbors.
+        if above:
+            uln = old.uln if k > 0 else first  # Problem: k may have been updated
+            lln = pred
+        else:
+            uln = pred
+            lln = old.lln if k > 0 else first
+
         # Iterate while the successor is a duplicate of the current trapezoid.
         while curr == succ:
             k += 1
             succ = m_list[k] if k < size else None
 
-        # Check whether the upper or the lower trapezoids are being addressed.
+        # Obtain the right neighbors.
         if above:
-            uln = old.uln if k > 0 else first
-            lln = pred
             urn = old.urn if k < size - 1 else last
             lrn = succ
         else:
-            uln = pred
-            lln = old.lln if k > 0 else first
             urn = succ
             lrn = old.lrn if k < size - 1 else last
 

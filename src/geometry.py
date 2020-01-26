@@ -170,7 +170,18 @@ class Trapezoid:
             lrn: The lower right neighbor.
         """
 
+        # Update the neighbors of the current node.
         self.uln = uln
         self.lln = lln
         self.urn = urn
         self.lrn = lrn
+
+        # Notify the neighbors of this update.
+        if uln is not None:
+            uln.urn = self
+        if lln is not None:
+            lln.lrn = self
+        if urn is not None:
+            urn.uln = self
+        if lrn is not None:
+            lrn.lln = self

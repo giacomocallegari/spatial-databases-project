@@ -41,14 +41,12 @@ class Node:
 
         self.parents.add(parent)
 
-    def remove_parent(self, parent: "Node"):
-        """Removes a parent from the current node.
-
-        Args:
-            parent: The parent to remove.
+    def remove_parents(self):
+        """Removes all parents from the current node.
         """
 
-        self.parents.discard(parent)
+        # Clear the parents.
+        self.parents.clear()
 
     def set_left_child(self, child: Optional["Node"]) -> None:
         """Sets the left child of the current node.
@@ -86,9 +84,11 @@ class Node:
             if old == parent.left_child:
                 # Become the new left child.
                 parent.set_left_child(self)
-            elif parent.right_child == old:
+            if old == parent.right_child:  #
                 # Become the new right child.
                 parent.set_right_child(self)
+
+        # old.remove_parents()
 
     def traverse(self, q: Point) -> Optional["Node"]:
         """Recursively traverses the search structure until a leaf, or an X-node if the point is already present.
@@ -162,6 +162,15 @@ class XNode(Node):
         super().__init__()
         self.point = point
 
+    def __str__(self) -> str:
+        """Returns the string representation of a XNode object.
+        """
+
+        res = super().__str__()
+        res += "\tPoint: " + str(self.point) + "\n"
+
+        return res
+
 
 class YNode(Node):
     """Class for Y-nodes of a search structure.
@@ -179,6 +188,15 @@ class YNode(Node):
 
         super().__init__()
         self.segment = segment
+
+    def __str__(self) -> str:
+        """Returns the string representation of a YNode object.
+        """
+
+        res = super().__str__()
+        res += "\tSegment: " + str(self.segment) + "\n"
+
+        return res
 
 
 class LeafNode(Node):

@@ -98,7 +98,9 @@ class TrapezoidalMap:
         res = ""
 
         for trapezoid in self.trapezoids:
-            res += str(trapezoid)
+            res += "\n" + str(trapezoid)
+
+        res += "\nSize: " + str(len(self.trapezoids))
 
         return res
 
@@ -111,6 +113,21 @@ class TrapezoidalMap:
 
         if trapezoid is not None:
             self.trapezoids.add(trapezoid)  # TODO: Only keep valid trapezoids
+            print("\t(+) Trapezoid " + get_id(trapezoid) + " added.")
+
+    def add_trapezoids(self, new_ts: NewTrapezoids) -> None:
+        """Adds multiple trapezoids to the trapezoidal map.
+
+        Args:
+            new_ts: The container of the new trapezoids.
+        """
+
+        self.add_trapezoid(new_ts.first)
+        for delta in set(new_ts.upper):
+            self.add_trapezoid(delta)
+        for delta in set(new_ts.lower):
+            self.add_trapezoid(delta)
+        self.add_trapezoid(new_ts.last)
 
     def remove_trapezoid(self, trapezoid: Trapezoid) -> None:
         """Removes a trapezoid from the trapezoidal map.
@@ -120,6 +137,17 @@ class TrapezoidalMap:
         """
 
         self.trapezoids.discard(trapezoid)
+        print("\t(-) Trapezoid " + get_id(trapezoid) + " removed.")
+
+    def remove_trapezoids(self, old_ts: List[Trapezoid]) -> None:
+        """Removes multiple trapezoids from the trapezoidal map.
+
+        Args:
+            old_ts: The list of the old trapezoids.
+        """
+
+        for delta in old_ts:
+            self.remove_trapezoid(delta)
 
     def follow_segment(self, s: Segment) -> List[Trapezoid]:
         """Finds the trapezoids that are intersected by a segment.
@@ -180,24 +208,24 @@ class TrapezoidalMap:
 
         return deltas
 
-    def update(self, s: Segment, deltas: List[Trapezoid]) -> None:
+    def update(self, s: Segment, old_ts: List[Trapezoid]) -> None:
         """Updates the trapezoidal map after some trapezoids have been intersected by the segment.
 
         The intersected trapezoids are removed and replaced with the new ones. The search structure is also updated.
 
         Args:
             s (Segment): The segment.
-            deltas (List[Trapezoids]): The list of intersected trapezoids.
+            old_ts (List[Trapezoids]): The list of intersected trapezoids.
         """
 
         print("\n>>> Updating the trapezoidal map...")
 
         # Check whether one or more trapezoids have been intersected.
-        if len(deltas) == 1:
+        if len(old_ts) == 1:
             print("Single trapezoid detected.")
 
             # Get the single intersected trapezoid.
-            old = deltas[0]
+            old = old_ts[0]
 
             # Generate the new trapezoids.
             A = Trapezoid(old.top, old.bottom, old.leftp, s.p)  # Leftmost trapezoid
@@ -227,17 +255,13 @@ class TrapezoidalMap:
             C.set_neighbors(uln, None, urn, None)
             D.set_neighbors(None, lln, None, lrn)
 
-            # Remove the old trapezoid and add the new ones.
-            self.remove_trapezoid(old)
-            self.trapezoids = self.trapezoids.union({A, B, C, D})
-
             new_ts = NewTrapezoids(A, B, [C], [D])
         else:
             print("Multiple trapezoids detected.")
 
             # Split the intermediate intersected trapezoids into their upper and lower parts.
             print("Splitting the intermediate trapezoids...")
-            upper_split, lower_split = split_trapezoids(s, deltas)
+            upper_split, lower_split = split_trapezoids(s, old_ts)
 
             # Merge the upper and the lower parts where possible.
             print("Merging the upper parts...")
@@ -246,14 +270,14 @@ class TrapezoidalMap:
             lower = merge_trapezoids(lower_split)
 
             # Get the default neighbors.
-            uln = deltas[0].uln
-            lln = deltas[0].lln
-            urn = deltas[-1].urn
-            lrn = deltas[-1].lrn
+            uln = old_ts[0].uln
+            lln = old_ts[0].lln
+            urn = old_ts[-1].urn
+            lrn = old_ts[-1].lrn
 
             # Check the existence of the leftmost and rightmost new trapezoids.
-            first = Trapezoid(deltas[0].top, deltas[0].bottom, deltas[0].leftp, s.p)
-            last = Trapezoid(deltas[-1].top, deltas[-1].bottom, s.q, deltas[-1].rightp)
+            first = Trapezoid(old_ts[0].top, old_ts[0].bottom, old_ts[0].leftp, s.p)
+            last = Trapezoid(old_ts[-1].top, old_ts[-1].bottom, s.q, old_ts[-1].rightp)
             if first.leftp != first.rightp:
                 first.set_neighbors(uln, lln, upper[0], lower[0])
                 uln = first
@@ -268,32 +292,26 @@ class TrapezoidalMap:
                 last = None
 
             # Set the neighbors of each merged trapezoid.
-            print("Updating neighbors of the upper trapezoids...")
+            print("Updating the neighbors of the upper trapezoids...")
             update_neighbors(upper_split, upper, uln, urn, True)
             print("Updating the neighbors of the lower trapezoids...")
             update_neighbors(lower_split, lower, lln, lrn, False)
 
-            # Remove the old trapezoids and add the new ones.
-            for delta in deltas:
-                self.remove_trapezoid(delta)
-            self.add_trapezoid(first)
-            for delta in set(upper):
-                self.add_trapezoid(delta)
-            for delta in set(lower):
-                self.add_trapezoid(delta)
-            self.add_trapezoid(last)
-
             new_ts = NewTrapezoids(first, last, upper, lower)
 
         print("\nIntersected trapezoids:")
-        for delta in deltas:
+        for delta in old_ts:
             print(get_id(delta))
 
         print("\nNew trapezoids:")
         print(new_ts)
 
+        # Remove the old trapezoids and add the new ones.
+        self.remove_trapezoids(old_ts)
+        self.add_trapezoids(new_ts)
+
         # Update the search structure.
-        self.D.update(s, deltas, new_ts)
+        self.D.update(s, old_ts, new_ts)
 
 
 class SearchStructure:
@@ -336,10 +354,13 @@ class SearchStructure:
         Args:
             s (Segment): The segment.
             old_ts (List[Trapezoid]): The list of intersected trapezoids.
-            new_ts (NewTrapezoids): The container for new trapezoids.
+            new_ts (NewTrapezoids): The container of the new trapezoids.
         """
 
         print("\n>>> Updating the search structure...")
+
+        x_nodes = set()
+        y_nodes = set()
 
         # Check the number of intersected trapezoids.
         if len(old_ts) == 1:
@@ -369,16 +390,21 @@ class SearchStructure:
                 np.set_left_child(A.leaf)
                 np.set_right_child(nq)
                 sub_root = np
+                y_nodes.add(np)
+                y_nodes.add(nq)
             if A is not None and B is None:
                 np.set_left_child(A.leaf)
                 np.set_right_child(ns)
                 sub_root = np
+                y_nodes.add(np)
             if A is None and B is not None:
                 nq.set_left_child(ns)
                 nq.set_right_child(B.leaf)
                 sub_root = nq
+                y_nodes.add(nq)
             if A is None and B is None:
                 sub_root = ns
+                y_nodes.add(ns)
 
             if sub_root is not None:
                 # Replace the old leaf with the new subtree where needed.
@@ -394,19 +420,17 @@ class SearchStructure:
             upper = new_ts.upper
             lower = new_ts.lower
 
-            # Replace each intermediate leaf with the corresponding Y-node.
+            # Create the Y-nodes.
             ns_list = []
             for i in range(len(old_ts)):
                 ns = YNode(s)
-                old = old_ts[i].leaf
                 ns_list.append(ns)
 
                 # Set the children of the Y-node.
                 ns.set_left_child(upper[i].leaf)
                 ns.set_right_child(lower[i].leaf)
 
-                # Replace the leaf of the old trapezoid.
-                ns.replace_leaf(old)
+            y_nodes = set(ns_list)
 
             # Replace the leftmost and rightmost leaves with X-nodes if needed.
             np = None
@@ -416,24 +440,33 @@ class SearchStructure:
                 np.set_left_child(first.leaf)
                 np.set_right_child(ns_list[0])
 
-                old_first = first.leaf
+                old_first = old_ts[0].leaf
                 np.replace_leaf(old_first)
+                x_nodes.add(np)
             if last is not None:
                 nq = XNode(s.q)
                 nq.set_left_child(ns_list[-1])
                 nq.set_right_child(last.leaf)
 
-                old_last = last.leaf
+                old_last = old_ts[-1].leaf
                 nq.replace_leaf(old_last)
+                x_nodes.add(nq)
 
-            print("X-nodes:")
-            for x_node in [np, nq]:
-                if x_node is not None:
-                    print(x_node)
+            # Replace each remaining leaf with a Y-node.
+            for i in range(len(old_ts)):
+                ns = ns_list[i]
+                old = old_ts[i].leaf
 
-            print("Y-nodes:")
-            for y_node in ns_list:
-                print(y_node)
+                # Replace the leaf of the old trapezoid.
+                ns.replace_leaf(old)
+
+        print("X-nodes:")
+        for x_node in x_nodes:
+            print(x_node)
+
+        print("Y-nodes:")
+        for y_node in y_nodes:
+            print(y_node)
 
     def query(self, q: Point) -> Optional[Trapezoid]:
         """Queries a point in the search structure.
@@ -461,6 +494,7 @@ class SearchStructure:
             face = res.trapezoid
         else:
             face = None
+            print("The query point is not valid.")
 
         return face
 
@@ -490,7 +524,6 @@ class Subdivision:
 
         # Initialize the trapezoidal map.
         self.T = TrapezoidalMap(R)
-        # print(T)
 
     def __str__(self) -> str:
         """Returns the string representation of a Subdivision object.
