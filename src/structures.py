@@ -112,7 +112,7 @@ class TrapezoidalMap:
         """
 
         if trapezoid is not None:
-            self.trapezoids.add(trapezoid)  # TODO: Only keep valid trapezoids
+            self.trapezoids.add(trapezoid)
             print("\t(+) Trapezoid " + get_id(trapezoid) + " added.")
 
     def add_trapezoids(self, new_ts: NewTrapezoids) -> None:
@@ -598,8 +598,6 @@ class Subdivision:
         a DAG representing the trapezoids as leaves.
         These structures can be used together to query which trapezoid contains a given point.
         """
-
-        # TODO: reset existing trapezoidal map?
 
         # Get the list of segments and shuffle it.
         segments = list(self.segments)
